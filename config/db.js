@@ -1,12 +1,19 @@
 //configuración de la base de datos
-
-require('dotenv').config();
 const oracledb = require('oracledb');
 
-exports.getConnection = async () => {
-  return await oracledb.getConnection({
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    connectionString: process.env.DB_CONNECTION
-  });
+const dbConfig = {
+  user: 'VNSB30',
+  password: 'Umg$2025',
+  connectString: '181.114.16.49:1521/oracle' // IP:PUERTO/SID
 };
+
+async function getConnection() {
+  try {
+    return await oracledb.getConnection(dbConfig);
+  } catch (err) {
+    console.error('Error al conectar a Oracle DB:', err);
+    throw err;
+  }
+}
+
+module.exports = { getConnection };
