@@ -1,50 +1,26 @@
 //aquí está la logica de cada endpoint
-const vuelosService = require('../../services/vuelosService');
+const programasVueloService = require('../services/programasVueloService');
 
-const getAllVuelos = async (req, res, next) => {
-  try {
-    const vuelos = await vuelosService.getAllVuelos();
-    res.status(200).json(vuelos);
-  } catch (error) {
-    console.error('Error al obtener los vuelos:', error);
-    res.status(500).json({ error: error.message });
-  }
+// Endpoint para obtener todos los programas de vuelo
+exports.getAllProgramas = async (req, res) => {
+    try {
+        const programas = await programasVueloService.getAllProgramas();
+        res.status(200).json(programas);
+    } catch (error) {
+        res.status(500).json({ message: 'Error obteniendo programas de vuelo', error });
+    }
 };
 
-const createVuelo = async (req, res, next) => {
-  try {
-    const vuelo = req.body;
-    const result = await vuelosService.createVuelo(vuelo);
-    res.status(201).json(result);
-  } catch (err) {
-    next(err);
-  }
-};
-
-const updateVuelo = async (req, res, next) => {
-  try {
-    const id = req.params.id;
-    const vuelo = req.body;
-    const result = await vuelosService.updateVuelo(id, vuelo);
-    res.json(result);
-  } catch (err) {
-    next(err);
-  }
-};
-
-const deleteVuelo = async (req, res, next) => {
-  try {
-    const id = req.params.id;
-    const result = await vuelosService.deleteVuelo(id);
-    res.json(result);
-  } catch (err) {
-    next(err);
-  }
-};
-
-module.exports = {
-  getAllVuelos,
-  createVuelo,
-  updateVuelo,
-  deleteVuelo
+// Endpoint para obtener un programa de vuelo por ID
+exports.getProgramaById = async (req, res) => {
+    try {
+        const programa = await programasVueloService.getProgramaById(req.params.id);
+        if (programa) {
+            res.status(200).json(programa);
+        } else {
+            res.status(404).json({ message: 'Programa de vuelo no encontrado' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Error obteniendo programa de vuelo', error });
+    }
 };

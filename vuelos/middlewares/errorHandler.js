@@ -1,8 +1,4 @@
-//aquí validaremos errores y excepciones
-const errorHandler = (err, req, res, next) => {
-    console.error(err);
-    res.status(500).json({ error: 'Error interno del servidor' });
-  };
-  
-  module.exports = errorHandler;
-  
+module.exports = (err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send({ message: 'Algo salió mal, por favor intente nuevamente.' });
+};

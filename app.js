@@ -1,15 +1,18 @@
 const express = require('express');
 const app = express();
-const vuelosRoutes = require('./routes/vuelosRoutes');
-const errorHandler = require('./middlewares/errorHandler');
-const testConnection = require('./routes/testConnection');
+const errorHandler = require('./vuelos/middlewares/errorHandler'); // o usa uno común si lo deseas
+const usuariosRoutes = require('./usuarios/routes/usuariosRoutes');
+const programasVueloRoutes = require('./programasVuelo/routes/programasVueloRoutes');
+//const vuelosRoutes = require('./vuelos/routes/vuelosRoutes');
 
 
-app.use('/api/test-db', testConnection);
+// agrega aquí más rutas según tu estructura
 app.use(express.json());
-app.use('/api/vuelos', vuelosRoutes);
-app.use(errorHandler);
+app.use('/api/usuarios', usuariosRoutes);
+app.use('/api/programas-vuelo', programasVueloRoutes);
+//app.use('/api/vuelos', vuelosRoutes);
 
 
+app.use(errorHandler); // error handler común
 module.exports = app;
 
