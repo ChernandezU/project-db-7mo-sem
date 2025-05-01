@@ -1,5 +1,5 @@
 //aquí está la logica de cada endpoint
-const vuelosService = require('../services/vuelosService');
+const vuelosService = require('../../services/vuelosService');
 
 const getAllVuelos = async (req, res, next) => {
   try {
