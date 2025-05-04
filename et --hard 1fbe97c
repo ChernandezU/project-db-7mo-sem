@@ -1,0 +1,12 @@
+[33m147022b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m mejoras y correcciones
+[33m1fbe97c[m todos los cambios solucionados
+[33m87df9c9[m db config y logica de aeropuertos
+[33m594c053[m middleware de usuarios
+[33mab8af82[m CRUD completo usuarios/programas-vuelos
+[33m126ab34[m estructura completa
+[33m1d9f0df[m estructura completa
+[33m17f7914[m implementación de estructura (sin codigo)
+[33m37f5152[m implementacion de estructura (pruebas)
+[33mccdcfda[m Merge branch 'main' of https://github.com/ChernandezU/project-db-7mo-sem
+[33m471f633[m Estructura inicial backend Node.js
+[33mb7c8978[m[33m ([m[1;31morigin/desarrollo/walter[m[33m, [m[1;31morigin/desarrollo/sheyla[m[33m, [m[1;31morigin/desarrollo/marlon[m[33m, [m[1;31morigin/desarrollo/julio[m[33m, [m[1;31morigin/desarrollo/jimmy[m[33m, [m[1;31morigin/desarrollo/douglas[m[33m, [m[1;31morigin/desarrollo/cristian[m[33m)[m Initial commit
