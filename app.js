@@ -16,3 +16,4 @@ app.use('/api/programas-vuelo', programasVueloRoutes);
 app.use(errorHandler); // error handler común
 module.exports = app;
 
+//para levantar el proyecto es node server.js
