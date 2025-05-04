@@ -1,4 +1,5 @@
 //aquí está la logica de cada endpoint
+<<<<<<< HEAD
 const service = require('../services/aeropuertosService');
 
 const getAeropuertos = async (req, res, next) => {
@@ -54,3 +55,33 @@ module.exports = {
   updateAeropuerto,
   deleteAeropuerto
 };
+=======
+const aeropuertoService = require('../services/aeropuertosService');
+
+const getAllAeropuertos = async (req, res) => {
+  const aeropuertos = await aeropuertoService.getAllAeropuertos();
+  res.json(aeropuertos);
+};
+
+const getAeropuertoById = async (req, res) => {
+  const aeropuerto = await aeropuertoService.getAeropuertoById(req.params.id);
+  res.json(aeropuerto || { message: "Aeropuerto no encontrado" });
+};
+
+const createAeropuerto = async (req, res) => {
+  const nuevoAeropuerto = await aeropuertoService.createAeropuerto(req.body);
+  res.json(nuevoAeropuerto);
+};
+
+const updateAeropuerto = async (req, res) => {
+  const actualizado = await aeropuertoService.updateAeropuerto(req.params.id, req.body);
+  res.json(actualizado ? { message: "Aeropuerto actualizado" } : { message: "Error al actualizar" });
+};
+
+const deleteAeropuerto = async (req, res) => {
+  await aeropuertoService.deleteAeropuerto(req.params.id);
+  res.json({ message: "Aeropuerto eliminado" });
+};
+
+module.exports = { getAllAeropuertos, getAeropuertoById, createAeropuerto, updateAeropuerto, deleteAeropuerto };
+>>>>>>> 96a565c3f0b8b728cace02e6a4c5a21424055f39
