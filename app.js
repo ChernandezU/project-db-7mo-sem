@@ -18,9 +18,12 @@ const simulacionTraficoAereoRoutes = require('./simulacion_trafico_aereo/routes/
 const operacionesAereasRoutes = require('./operaciones_aereas/routes/operacionesAereasRoutes');
 const simulacionFlujoPasajerosRoutes = require('./simulacion_flujo_pasajeros/routes/simulacionFlujoPasajerosRoutes');
 const simulacionImpactoFinancieroRoutes = require('./simulacion_impacto_financiero/routes/simulacionImpactoFinancieroRoutes');
-
-
-
+//douglas
+const objetosPerdidosRoutes = require('./objetos_perdidos/routes/objetos_perdidosRoutes');
+const operacionesTerrestresRoutes = require('./operaciones_terrestres/routes/operaciones_TerrestresRoutes');
+const mercanciasRoutes = require('./mercancias/routes/mercanciasRoutes');
+const facturacionRoutes = require('./facturacion/routes/facturacionRoutes');
+const pagosRoutes = require('./pagos/routes/pagosRoutes');
 // Middleware global
 app.use(express.json());
 
@@ -41,11 +44,18 @@ app.use('/api/operaciones_aereas', operacionesAereasRoutes);
 app.use('/api/simulacion-flujo-pasajeros', simulacionFlujoPasajerosRoutes);
 app.use('/api/simulacion-impacto-financiero', simulacionImpactoFinancieroRoutes);
 app.use('/api/simulacion_impacto_financiero', simulacionImpactoFinancieroRoutes);
-
-
-
+//douglas
+app.use('/api/objetos-perdidos', objetosPerdidosRoutes);
+app.use('/api/operaciones-terrestres', operacionesTerrestresRoutes);
+app.use('/api/mercancias', mercanciasRoutes);
+app.use('/api/facturacion', facturacionRoutes);
+app.use('/api/pagos', pagosRoutes);
 
 //para levantar el proyecto es node server.js
+
+
+
+
 
 
 // Manejo de errores global
