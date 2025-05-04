@@ -1,26 +1,41 @@
-//aquí está la logica de cada endpoint
-const programasVueloService = require('../services/programasVueloService');
+const vuelosService = require('../services/vuelosService');
 
-// Endpoint para obtener todos los programas de vuelo
-exports.getAllProgramas = async (req, res) => {
-    try {
-        const programas = await programasVueloService.getAllProgramas();
-        res.status(200).json(programas);
-    } catch (error) {
-        res.status(500).json({ message: 'Error obteniendo programas de vuelo', error });
-    }
+// Obtener todos los vuelos
+exports.obtenerVuelos = async (req, res, next) => {
+  try {
+    const vuelos = await vuelosService.obtenerVuelos();
+    res.status(200).json(vuelos);
+  } catch (error) {
+    next(error);
+  }
 };
 
-// Endpoint para obtener un programa de vuelo por ID
-exports.getProgramaById = async (req, res) => {
-    try {
-        const programa = await programasVueloService.getProgramaById(req.params.id);
-        if (programa) {
-            res.status(200).json(programa);
-        } else {
-            res.status(404).json({ message: 'Programa de vuelo no encontrado' });
-        }
-    } catch (error) {
-        res.status(500).json({ message: 'Error obteniendo programa de vuelo', error });
-    }
+// Crear un nuevo vuelo
+exports.crearVuelo = async (req, res, next) => {
+  try {
+    const nuevoVuelo = await vuelosService.crearVuelo(req.body);
+    res.status(201).json(nuevoVuelo);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Actualizar un vuelo
+exports.actualizarVuelo = async (req, res, next) => {
+  try {
+    const vueloActualizado = await vuelosService.actualizarVuelo(req.params.id, req.body);
+    res.status(200).json(vueloActualizado);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Eliminar un vuelo
+exports.eliminarVuelo = async (req, res, next) => {
+  try {
+    await vuelosService.eliminarVuelo(req.params.id);
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
 };

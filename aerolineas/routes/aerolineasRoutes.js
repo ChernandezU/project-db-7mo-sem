@@ -1,17 +1,13 @@
 //Aquí se recibe la petición del usuario y se llama a los servicios. Controlas qué se envía como respuesta.
-const oracledb = require('oracledb');
-const { getConnection } = require('../../config/db');
-
-//
+// Aquí se recibe la petición del usuario y se llama a los controladores.
 const express = require('express');
-const { getAllAerolineas, getAerolineaById, createAerolinea, updateAerolinea, deleteAerolinea } = require('../controllers/aerolineasController');
-
 const router = express.Router();
+const aerolineasController = require('../controllers/aerolineasController');
 
-router.get('/', getAllAerolineas);
-router.get('/:id', getAerolineaById);
-router.post('/', createAerolinea);
-router.put('/:id', updateAerolinea);
-router.delete('/:id', deleteAerolinea);
+router.get('/', aerolineasController.getAllAerolineas);
+router.get('/:id', aerolineasController.getAerolineaById);
+router.post('/', aerolineasController.createAerolinea);
+router.put('/:id', aerolineasController.updateAerolinea);
+router.delete('/:id', aerolineasController.deleteAerolinea);
 
 module.exports = router;

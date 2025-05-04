@@ -1,87 +1,37 @@
-//aquí está la logica de cada endpoint
-<<<<<<< HEAD
-const service = require('../services/aeropuertosService');
+const aeropuertosService = require('../services/aeropuertosService');
 
-const getAeropuertos = async (req, res, next) => {
+exports.obtenerAeropuertos = async (req, res, next) => {
   try {
-    const data = await service.getAeropuertos();
-    res.json(data);
-  } catch (err) {
-    next(err);
+    const aeropuertos = await aeropuertosService.obtenerAeropuertos();
+    res.status(200).json(aeropuertos);
+  } catch (error) {
+    next(error);
   }
 };
 
-const getAeropuertoById = async (req, res, next) => {
+exports.crearAeropuerto = async (req, res, next) => {
   try {
-    const data = await service.getAeropuertoById(req.params.id);
-    if (!data) return res.status(404).json({ error: 'No encontrado' });
-    res.json(data);
-  } catch (err) {
-    next(err);
+    const nuevoAeropuerto = await aeropuertosService.crearAeropuerto(req.body);
+    res.status(201).json(nuevoAeropuerto);
+  } catch (error) {
+    next(error);
   }
 };
 
-const createAeropuerto = async (req, res, next) => {
+exports.actualizarAeropuerto = async (req, res, next) => {
   try {
-    const data = await service.createAeropuerto(req.body);
-    res.status(201).json(data);
-  } catch (err) {
-    next(err);
+    const aeropuertoActualizado = await aeropuertosService.actualizarAeropuerto(req.params.id, req.body);
+    res.status(200).json(aeropuertoActualizado);
+  } catch (error) {
+    next(error);
   }
 };
 
-const updateAeropuerto = async (req, res, next) => {
+exports.eliminarAeropuerto = async (req, res, next) => {
   try {
-    const data = await service.updateAeropuerto(req.params.id, req.body);
-    res.json(data);
-  } catch (err) {
-    next(err);
+    await aeropuertosService.eliminarAeropuerto(req.params.id);
+    res.status(204).send();
+  } catch (error) {
+    next(error);
   }
 };
-
-const deleteAeropuerto = async (req, res, next) => {
-  try {
-    const data = await service.deleteAeropuerto(req.params.id);
-    res.json(data);
-  } catch (err) {
-    next(err);
-  }
-};
-
-module.exports = {
-  getAeropuertos,
-  getAeropuertoById,
-  createAeropuerto,
-  updateAeropuerto,
-  deleteAeropuerto
-};
-=======
-const aeropuertoService = require('../services/aeropuertosService');
-
-const getAllAeropuertos = async (req, res) => {
-  const aeropuertos = await aeropuertoService.getAllAeropuertos();
-  res.json(aeropuertos);
-};
-
-const getAeropuertoById = async (req, res) => {
-  const aeropuerto = await aeropuertoService.getAeropuertoById(req.params.id);
-  res.json(aeropuerto || { message: "Aeropuerto no encontrado" });
-};
-
-const createAeropuerto = async (req, res) => {
-  const nuevoAeropuerto = await aeropuertoService.createAeropuerto(req.body);
-  res.json(nuevoAeropuerto);
-};
-
-const updateAeropuerto = async (req, res) => {
-  const actualizado = await aeropuertoService.updateAeropuerto(req.params.id, req.body);
-  res.json(actualizado ? { message: "Aeropuerto actualizado" } : { message: "Error al actualizar" });
-};
-
-const deleteAeropuerto = async (req, res) => {
-  await aeropuertoService.deleteAeropuerto(req.params.id);
-  res.json({ message: "Aeropuerto eliminado" });
-};
-
-module.exports = { getAllAeropuertos, getAeropuertoById, createAeropuerto, updateAeropuerto, deleteAeropuerto };
->>>>>>> 96a565c3f0b8b728cace02e6a4c5a21424055f39

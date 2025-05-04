@@ -1,23 +1,23 @@
 const express = require('express');
 const app = express();
-const errorHandler = require('./BD_PROYECTO/vuelos/middlewares/errorHandler'); // Middleware global de errores
+const errorHandler = require('./usuarios/middlewares/errorHandler'); // Middleware global de errores
 
 // Importación de rutas
 const usuariosRoutes = require('./usuarios/routes/usuariosRoutes');
-//const programasVueloRoutes = require('./BD_PROYECTO/programas_vuelo/routes/programas_vuelosRoutes');
-//const aerolineasRoutes = require('./BD_PROYECTO/aerolineas/routes/aerolineasRoutes');
-//const aeropuertosRoutes = require('./BD_PROYECTO/aeropuertos/routes/aeropuertosRoutes');
-//const avionesRoutes = require('./BD_PROYECTO/aviones/routes/avionesRoutes');
-//const gestionInformacionRoutes = require('./BD_PROYECTO/gestion_informacion/routes/gestionInformacionRoutes');
-//const horariosVuelosRoutes = require('./BD_PROYECTO/horarios_vuelos/routes/horariosVuelosRoutes');
-//const programacionEstacionalRoutes = require('./BD_PROYECTO/programacion_estacional/routes/programacionEstacionalRoutes');
-// const vuelosRoutes = require('./Backend_DB_U/vuelos/routes/vuelosRoutes'); // Descomentar cuando se implemente
-//const arrestosRoutes = require('./BD_PROYECTO/arrestos/routes/arrestosRoutes');
-//const programacionMundialRoutes = require('./BD PROYECTO/programacion_mundial/routes/programacionMundialRoutes');
-//const simulacionTraficoAereoRoutes = require('./BD PROYECTO/simulacion_trafico_aereo/routes/simulacionTraficoAereoRoutes');
-//const operacionesAereasRoutes = require('./BD_PROYECTO/operaciones_aereas/routes/operacionesAereasRoutes');
-//const simulacionFlujoPasajerosRoutes = require('./BD_PROYECTO/simulacion_flujo_pasajeros/routes/simulacionFlujoPasajerosRoutes');
-//const simulacionImpactoFinancieroRoutes = require('./BD_PROYECTO/simulacion_impacto_financiero/routes/simulacionImpactoFinancieroRoutes');
+const programasVueloRoutes = require('./programas_vuelo/routes/programasVueloRoutes');
+const aerolineasRoutes = require('./aerolineas/routes/aerolineasRoutes');
+const vuelosRoutes = require('./vuelos/routes/vuelosRoutes');
+const aeropuertosRoutes = require('./aeropuertos/routes/aeropuertosRoutes');
+const avionesRoutes = require('./aviones/routes/avionesRoutes');
+const gestionInformacionRoutes = require('./gestion_informacion/routes/gestionInformacionRoutes');
+const horariosVuelosRoutes = require('./horarios_vuelos/routes/horariosVuelosRoutes'); // Aquí agregas las rutas de horarios_vuelos
+const programacionEstacionalRoutes = require('./programacion_estacional/routes/programacionEstacionalRoutes');
+const arrestosRoutes = require('./arrestos/routes/arrestosRoutes');
+const programacionMundialRoutes = require('./programacion_mundial/routes/programacionMundialRoutes');
+const simulacionTraficoAereoRoutes = require('./simulacion_trafico_aereo/routes/simulacionTraficoAereoRoutes');
+const operacionesAereasRoutes = require('./operaciones_aereas/routes/operacionesAereasRoutes');
+const simulacionFlujoPasajerosRoutes = require('./simulacion_flujo_pasajeros/routes/simulacionFlujoPasajerosRoutes');
+const simulacionImpactoFinancieroRoutes = require('./simulacion_impacto_financiero/routes/simulacionImpactoFinancieroRoutes');
 
 
 
@@ -26,25 +26,27 @@ app.use(express.json());
 
 // Registro de rutas con `app.use`
 app.use('/api/usuarios', usuariosRoutes);
-//app.use('/api/programas-vuelo', programasVueloRoutes);
-//app.use('/api/aerolineas', aerolineasRoutes);
-//app.use('/api/aeropuertos', aeropuertosRoutes);
-//app.use('/api/aviones', avionesRoutes);
-//app.use('/api/gestion-informacion', gestionInformacionRoutes);
-//app.use('/api/horarios-vuelos', horariosVuelosRoutes);
-//app.use('/api/programacion-estacional', programacionEstacionalRoutes);
-//app.use('/api/arrestos', arrestosRoutes);
-//app.use('/api/programacion-mundial', programacionMundialRoutes);
-//app.use('/api/simulacion-trafico-aereo', simulacionTraficoAereoRoutes);
-//app.use('/api/operaciones-aereas', operacionesAereasRoutes);
-//app.use('/api/simulacion-flujo-pasajeros', simulacionFlujoPasajerosRoutes);
-//app.use('/api/simulacion-impacto-financiero', simulacionImpactoFinancieroRoutes);
+app.use('/api/programas-vuelo', programasVueloRoutes);
+app.use('/api/aerolineas', aerolineasRoutes);
+app.use('/api/vuelos', vuelosRoutes);
+app.use('/api/aeropuertos', aeropuertosRoutes);
+app.use('/api/aviones', avionesRoutes);
+app.use('/api/gestion-informacion', gestionInformacionRoutes);
+app.use('/api/horarios-vuelos', horariosVuelosRoutes); 
+app.use('/api/programacion-estacional', programacionEstacionalRoutes);
+app.use('/api/arrestos', arrestosRoutes);
+app.use('/api/programacion-mundial', programacionMundialRoutes);
+app.use('/api/simulacion-trafico-aereo', simulacionTraficoAereoRoutes);
+app.use('/api/operaciones_aereas', operacionesAereasRoutes);
+app.use('/api/simulacion-flujo-pasajeros', simulacionFlujoPasajerosRoutes);
+app.use('/api/simulacion-impacto-financiero', simulacionImpactoFinancieroRoutes);
+app.use('/api/simulacion_impacto_financiero', simulacionImpactoFinancieroRoutes);
 
 
 
-<<<<<<< HEAD
+
 //para levantar el proyecto es node server.js
-=======
+
 
 // Manejo de errores global
 app.use(errorHandler);
@@ -55,4 +57,3 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
->>>>>>> 96a565c3f0b8b728cace02e6a4c5a21424055f39

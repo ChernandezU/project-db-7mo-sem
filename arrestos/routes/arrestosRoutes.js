@@ -1,16 +1,12 @@
-//Aquí se recibe la petición del usuario y se llama a los servicios. Controlas qué se envía como respuesta.
-const oracledb = require('oracledb');
-const { getConnection } = require('../../config/db');
-//
 const express = require('express');
-const { getAllArrestos, getArrestoById, createArresto, updateArresto, deleteArresto } = require('../controllers/arrestosController');
-
 const router = express.Router();
+const arrestosController = require('../controllers/arrestosController');
 
-router.get('/', getAllArrestos);
-router.get('/:id', getArrestoById);
-router.post('/', createArresto);
-router.put('/:id', updateArresto);
-router.delete('/:id', deleteArresto);
+// Rutas para arrestos
+router.get('/', arrestosController.getAllArrestos); // Obtener todos los arrestos
+router.get('/:id', arrestosController.getArrestoById); // Obtener arresto por ID
+router.post('/', arrestosController.createArresto); // Crear un nuevo arresto
+router.put('/:id', arrestosController.updateArresto); // Actualizar arresto por ID
+router.delete('/:id', arrestosController.deleteArresto); // Eliminar arresto por ID
 
 module.exports = router;

@@ -1,29 +1,56 @@
 //aquí está la logica de cada endpoint
-const aerolineaService = require('../services/aerolineasService');
+// Aquí se recibe la petición del usuario y se llama a los servicios. Controlas qué se envía como respuesta.
+const oracledb = require('oracledb');
+const { getConnection } = require('../../config/db');
+const aerolineasService = require('../services/aerolineasService');
 
-const getAllAerolineas = async (req, res) => {
-  const aerolineas = await aerolineaService.getAllAerolineas();
-  res.json(aerolineas);
+exports.getAllAerolineas = async (req, res, next) => {
+  try {
+    const data = await aerolineasService.getAllAerolineas();
+    res.json(data);
+  } catch (error) {
+    next(error);
+  }
 };
 
-const getAerolineaById = async (req, res) => {
-  const aerolinea = await aerolineaService.getAerolineaById(req.params.id);
-  res.json(aerolinea || { message: "Aerolinea no encontrada" });
+exports.getAerolineaById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const data = await aerolineasService.getAerolineaById(id);
+    if (!data) return res.status(404).json({ message: 'No encontrado' });
+    res.json(data);
+  } catch (error) {
+    next(error);
+  }
 };
 
-const createAerolinea = async (req, res) => {
-  const nuevaAerolinea = await aerolineaService.createAerolinea(req.body);
-  res.json(nuevaAerolinea);
+exports.createAerolinea = async (req, res, next) => {
+  try {
+    const nueva = req.body;
+    const result = await aerolineasService.createAerolinea(nueva);
+    res.status(201).json({ message: 'Creado exitosamente', id: result });
+  } catch (error) {
+    next(error);
+  }
 };
 
-const updateAerolinea = async (req, res) => {
-  const actualizado = await aerolineaService.updateAerolinea(req.params.id, req.body);
-  res.json(actualizado ? { message: "Aerolinea actualizada" } : { message: "Error al actualizar" });
+exports.updateAerolinea = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const cambios = req.body;
+    await aerolineasService.updateAerolinea(id, cambios);
+    res.json({ message: 'Actualizado correctamente' });
+  } catch (error) {
+    next(error);
+  }
 };
 
-const deleteAerolinea = async (req, res) => {
-  await aerolineaService.deleteAerolinea(req.params.id);
-  res.json({ message: "Aerolinea eliminada" });
+exports.deleteAerolinea = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await aerolineasService.deleteAerolinea(id);
+    res.json({ message: 'Eliminado correctamente' });
+  } catch (error) {
+    next(error);
+  }
 };
-
-module.exports = { getAllAerolineas, getAerolineaById, createAerolinea, updateAerolinea, deleteAerolinea };

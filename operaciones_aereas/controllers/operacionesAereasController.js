@@ -2,23 +2,23 @@
 //Aquí se recibe la petición del usuario y se llama a los servicios. Controlas qué se envía como respuesta.
 const oracledb = require('oracledb');
 const { getConnection } = require('../../config/db');
-const arrestosService = require('../services/arrestosService');
+const operacionesAereasService = require('../services/operacionesAereasService');
 
-// Obtener todos los arrestos
-exports.getAllArrestos = async (req, res, next) => {
+// Obtener todas las operaciones aéreas
+exports.getAllOperaciones = async (req, res, next) => {
   try {
-    const data = await arrestosService.getAllArrestos();
+    const data = await operacionesAereasService.getAllOperaciones();
     res.json(data);
   } catch (error) {
     next(error);
   }
 };
 
-// Obtener un arresto por ID
-exports.getArrestoById = async (req, res, next) => {
+// Obtener operación aérea por ID
+exports.getOperacionById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const data = await arrestosService.getArrestoById(id);
+    const data = await operacionesAereasService.getOperacionById(id);
     if (!data) return res.status(404).json({ message: 'No encontrado' });
     res.json(data);
   } catch (error) {
@@ -26,34 +26,34 @@ exports.getArrestoById = async (req, res, next) => {
   }
 };
 
-// Crear nuevo arresto
-exports.createArresto = async (req, res, next) => {
+// Crear nueva operación aérea
+exports.createOperacion = async (req, res, next) => {
   try {
-    const nuevo = req.body;
-    const result = await arrestosService.createArresto(nuevo);
+    const nueva = req.body;
+    const result = await operacionesAereasService.createOperacion(nueva);
     res.status(201).json({ message: 'Creado exitosamente', id: result });
   } catch (error) {
     next(error);
   }
 };
 
-// Actualizar arresto por ID
-exports.updateArresto = async (req, res, next) => {
+// Actualizar operación aérea por ID
+exports.updateOperacion = async (req, res, next) => {
   try {
     const { id } = req.params;
     const cambios = req.body;
-    await arrestosService.updateArresto(id, cambios);
+    await operacionesAereasService.updateOperacion(id, cambios);
     res.json({ message: 'Actualizado correctamente' });
   } catch (error) {
     next(error);
   }
 };
 
-// Eliminar arresto por ID
-exports.deleteArresto = async (req, res, next) => {
+// Eliminar operación aérea por ID
+exports.deleteOperacion = async (req, res, next) => {
   try {
     const { id } = req.params;
-    await arrestosService.deleteArresto(id);
+    await operacionesAereasService.deleteOperacion(id);
     res.json({ message: 'Eliminado correctamente' });
   } catch (error) {
     next(error);

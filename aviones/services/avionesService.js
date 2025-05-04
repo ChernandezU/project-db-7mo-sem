@@ -1,24 +1,65 @@
-//servicio para la gestion de .....
-const Avion = require('../models/Avion');
+const { getConnection } = require('../../config/db');
 
-const getAllAviones = async () => {
-  return await Avion.findAll();
+exports.obtenerAviones = async () => {
+  const connection = await getConnection();
+  try {
+    const result = await connection.execute(
+      `SELECT * FROM AVIONES`,
+      [],
+      { outFormat: require('oracledb').OUT_FORMAT_OBJECT }
+    );
+    return result.rows;
+  } finally {
+    await connection.close();
+  }
 };
 
-const getAvionById = async (id) => {
-  return await Avion.findByPk(id);
+exports.crearAvion = async (avion) => {
+  const { COD_AVION, MODELO, ESTADO_MANTENIMIENTO, TOTAL_ASIENTOS, OCUPADOS, LIBRES } = avion;
+  const connection = await getConnection();
+  try {
+    await connection.execute(
+      `INSERT INTO AVIONES (COD_AVION, MODELO, ESTADO_MANTENIMIENTO, TOTAL_ASIENTOS, OCUPADOS, LIBRES)
+       VALUES (:COD_AVION, :MODELO, :ESTADO_MANTENIMIENTO, :TOTAL_ASIENTOS, :OCUPADOS, :LIBRES)`,
+      { COD_AVION, MODELO, ESTADO_MANTENIMIENTO, TOTAL_ASIENTOS, OCUPADOS, LIBRES },
+      { autoCommit: true }
+    );
+    return { mensaje: 'Avión creado exitosamente' };
+  } finally {
+    await connection.close();
+  }
 };
 
-const createAvion = async (data) => {
-  return await Avion.create(data);
+exports.actualizarAvion = async (id, datos) => {
+  const { MODELO, ESTADO_MANTENIMIENTO, TOTAL_ASIENTOS, OCUPADOS, LIBRES } = datos;
+  const connection = await getConnection();
+  try {
+    await connection.execute(
+      `UPDATE AVIONES
+       SET MODELO = :MODELO,
+           ESTADO_MANTENIMIENTO = :ESTADO_MANTENIMIENTO,
+           TOTAL_ASIENTOS = :TOTAL_ASIENTOS,
+           OCUPADOS = :OCUPADOS,
+           LIBRES = :LIBRES
+       WHERE COD_AVION = :COD_AVION`,
+      { MODELO, ESTADO_MANTENIMIENTO, TOTAL_ASIENTOS, OCUPADOS, LIBRES, COD_AVION: id },
+      { autoCommit: true }
+    );
+    return { mensaje: 'Avión actualizado exitosamente' };
+  } finally {
+    await connection.close();
+  }
 };
 
-const updateAvion = async (id, data) => {
-  return await Avion.update(data, { where: { id_avion: id } });
+exports.eliminarAvion = async (id) => {
+  const connection = await getConnection();
+  try {
+    await connection.execute(
+      `DELETE FROM AVIONES WHERE COD_AVION = :id`,
+      [id],
+      { autoCommit: true }
+    );
+  } finally {
+    await connection.close();
+  }
 };
-
-const deleteAvion = async (id) => {
-  return await Avion.destroy({ where: { id_avion: id } });
-};
-
-module.exports = { getAllAviones, getAvionById, createAvion, updateAvion, deleteAvion };
