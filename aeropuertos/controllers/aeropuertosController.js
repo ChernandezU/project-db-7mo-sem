@@ -1,93 +1,46 @@
-<<<<<<< HEAD
 const aeropuertosService = require('../services/aeropuertosService');
 
-exports.obtenerAeropuertos = async (req, res, next) => {
+exports.getAllAeropuertos = async (req, res) => {
   try {
-    const aeropuertos = await aeropuertosService.obtenerAeropuertos();
-    res.status(200).json(aeropuertos);
-  } catch (error) {
-    next(error);
-  }
-};
-
-exports.crearAeropuerto = async (req, res, next) => {
-  try {
-    const nuevoAeropuerto = await aeropuertosService.crearAeropuerto(req.body);
-    res.status(201).json(nuevoAeropuerto);
-  } catch (error) {
-    next(error);
-  }
-};
-
-exports.actualizarAeropuerto = async (req, res, next) => {
-  try {
-    const aeropuertoActualizado = await aeropuertosService.actualizarAeropuerto(req.params.id, req.body);
-    res.status(200).json(aeropuertoActualizado);
-  } catch (error) {
-    next(error);
-  }
-};
-
-exports.eliminarAeropuerto = async (req, res, next) => {
-  try {
-    await aeropuertosService.eliminarAeropuerto(req.params.id);
-    res.status(204).send();
-  } catch (error) {
-    next(error);
-  }
-};
-=======
-const express = require('express');
-const router = express.Router();
-const aeropuertoService = require('../services/aeropuertosService');
-
-// Definición de funciones de controlador
-const getAeropuertos = async (req, res, next) => {
-  try {
-    const data = await aeropuertoService.getAeropuertos();
+    const data = await aeropuertosService.getAllAeropuertos();
     res.json(data);
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener aeropuertos' });
   }
 };
 
-const getAeropuertoById = async (req, res, next) => {
+exports.getAeropuertoById = async (req, res) => {
   try {
-    const data = await aeropuertoService.getAeropuertoById(req.params.id);
-    if (!data) return res.status(404).json({ error: 'Aeropuerto no encontrado' });
+    const data = await aeropuertosService.getAeropuertoById(req.params.id);
     res.json(data);
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener aeropuerto' });
   }
 };
 
-const createAeropuerto = async (req, res, next) => {
+exports.createAeropuerto = async (req, res) => {
   try {
-    const data = await aeropuertoService.createAeropuerto(req.body);
-    res.status(201).json(data);
-  } catch (err) {
-    next(err);
+    const result = await aeropuertosService.createAeropuerto(req.body);
+    res.status(201).json(result);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al crear aeropuerto' });
   }
 };
 
-const updateAeropuerto = async (req, res, next) => {
+exports.updateAeropuerto = async (req, res) => {
   try {
-    const data = await aeropuertoService.updateAeropuerto(req.params.id, req.body);
-    res.json(data ? { message: "Aeropuerto actualizado" } : { error: "Error al actualizar" });
-  } catch (err) {
-    next(err);
+    const result = await aeropuertosService.updateAeropuerto(req.params.id, req.body);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar aeropuerto' });
   }
 };
 
-const deleteAeropuerto = async (req, res, next) => {
+exports.deleteAeropuerto = async (req, res) => {
   try {
-    await aeropuertoService.deleteAeropuerto(req.params.id);
-    res.json({ message: "Aeropuerto eliminado" });
-  } catch (err) {
-    next(err);
+    const result = await aeropuertosService.deleteAeropuerto(req.params.id);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar aeropuerto' });
   }
 };
-
-// Exportando funciones correctamente
-module.exports = { getAeropuertos, getAeropuertoById, createAeropuerto, updateAeropuerto, deleteAeropuerto };
->>>>>>> origin/desarrollo/sheyla

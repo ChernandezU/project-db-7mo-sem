@@ -1,13 +1,12 @@
 //Aquí se recibe la petición del usuario y se llama a los servicios. Controlas qué se envía como respuesta.
 const express = require('express');
 const router = express.Router();
-const simulacionFlujoPasajerosController = require('../controllers/simulacionFlujoPasajerosController');
+const controller = require('../controllers/simulacionFlujoPasajerosController');
 
-// Rutas para simulaciones de flujo de pasajeros
-router.get('/', simulacionFlujoPasajerosController.getAllSimulaciones); // Obtener todas las simulaciones
-router.get('/:id', simulacionFlujoPasajerosController.getSimulacionById); // Obtener simulación por ID
-router.post('/', simulacionFlujoPasajerosController.createSimulacion); // Crear nueva simulación
-router.put('/:id', simulacionFlujoPasajerosController.updateSimulacion); // Actualizar simulación por ID
-router.delete('/:id', simulacionFlujoPasajerosController.deleteSimulacion); // Eliminar simulación por ID
+router.get('/', controller.getAllSimulacionesFlujo);
+router.get('/:id', controller.getSimulacionFlujoById);
+router.post('/', controller.createSimulacionFlujo);
+router.put('/:id', controller.updateSimulacionFlujo);
+router.delete('/:id', controller.deleteSimulacionFlujo);
 
 module.exports = router;

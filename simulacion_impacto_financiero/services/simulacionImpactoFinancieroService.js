@@ -1,98 +1,66 @@
 //servicio para la gestion de .....
+const oracledb = require('oracledb');
 const { getConnection } = require('../../config/db');
 
-// Obtener todas las simulaciones
-exports.getAllSimulaciones = async () => {
-  let connection;
-  try {
-    connection = await getConnection();
-    const result = await connection.execute('SELECT * FROM SIMULACION_IMPACTO_FINANCIERO');
-    return result.rows;
-  } catch (error) {
-    throw new Error('Error al obtener las simulaciones de impacto financiero: ' + error.message);
-  } finally {
-    if (connection) await connection.close();
-  }
+exports.getAllSimulacionesFinancieras = async () => {
+  const connection = await getConnection();
+  const result = await connection.execute(`SELECT * FROM SIMULACION_IMPACTO_FINANCIERO`);
+  await connection.close();
+  return result.rows;
 };
 
-// Obtener simulación por ID
-exports.getSimulacionById = async (id) => {
-  let connection;
-  try {
-    connection = await getConnection();
-    const result = await connection.execute(
-      'SELECT * FROM SIMULACION_IMPACTO_FINANCIERO WHERE ID = :id',
-      [id]
-    );
-    return result.rows[0];
-  } catch (error) {
-    throw new Error('Error al obtener la simulación: ' + error.message);
-  } finally {
-    if (connection) await connection.close();
-  }
+exports.getSimulacionFinancieraById = async (id) => {
+  const connection = await getConnection();
+  const result = await connection.execute(
+    `SELECT * FROM SIMULACION_IMPACTO_FINANCIERO WHERE ID_SIMULACION = :id`,
+    [id]
+  );
+  await connection.close();
+  return result.rows[0];
 };
 
-// Crear nueva simulación
-exports.createSimulacion = async (simulacion) => {
-  let connection;
-  try {
-    connection = await getConnection();
-    const { descripcion, fecha_simulacion, impacto_estimado } = simulacion;
-    const result = await connection.execute(
-      `INSERT INTO SIMULACION_IMPACTO_FINANCIERO (DESCRIPCION, FECHA_SIMULACION, IMPACTO_ESTIMADO)
-       VALUES (:descripcion, :fecha_simulacion, :impacto_estimado)
-       RETURNING ID INTO :id`,
-      {
-        descripcion,
-        fecha_simulacion,
-        impacto_estimado,
-        id: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
-      },
-      { autoCommit: true }
-    );
-    return result.outBinds.id[0];
-  } catch (error) {
-    throw new Error('Error al crear simulación: ' + error.message);
-  } finally {
-    if (connection) await connection.close();
-  }
+exports.createSimulacionFinanciera = async (data) => {
+  const { fecha_simulacion, ingresos_estimados, gastos_estimados, observaciones } = data;
+
+  const connection = await getConnection();
+  await connection.execute(
+    `INSERT INTO SIMULACION_IMPACTO_FINANCIERO (
+      FECHA_SIMULACION, INGRESOS_ESTIMADOS, GASTOS_ESTIMADOS, OBSERVACIONES
+    ) VALUES (
+      :fecha_simulacion, :ingresos_estimados, :gastos_estimados, :observaciones
+    )`,
+    { fecha_simulacion, ingresos_estimados, gastos_estimados, observaciones },
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Simulación financiera creada correctamente' };
 };
 
-// Actualizar simulación
-exports.updateSimulacion = async (id, cambios) => {
-  let connection;
-  try {
-    connection = await getConnection();
-    const { descripcion, fecha_simulacion, impacto_estimado } = cambios;
-    await connection.execute(
-      `UPDATE SIMULACION_IMPACTO_FINANCIERO
-       SET DESCRIPCION = :descripcion,
-           FECHA_SIMULACION = :fecha_simulacion,
-           IMPACTO_ESTIMADO = :impacto_estimado
-       WHERE ID = :id`,
-      [descripcion, fecha_simulacion, impacto_estimado, id],
-      { autoCommit: true }
-    );
-  } catch (error) {
-    throw new Error('Error al actualizar simulación: ' + error.message);
-  } finally {
-    if (connection) await connection.close();
-  }
+exports.updateSimulacionFinanciera = async (id, data) => {
+  const { fecha_simulacion, ingresos_estimados, gastos_estimados, observaciones } = data;
+
+  const connection = await getConnection();
+  await connection.execute(
+    `UPDATE SIMULACION_IMPACTO_FINANCIERO SET
+      FECHA_SIMULACION = :fecha_simulacion,
+      INGRESOS_ESTIMADOS = :ingresos_estimados,
+      GASTOS_ESTIMADOS = :gastos_estimados,
+      OBSERVACIONES = :observaciones
+    WHERE ID_SIMULACION = :id`,
+    { fecha_simulacion, ingresos_estimados, gastos_estimados, observaciones, id },
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Simulación financiera actualizada correctamente' };
 };
 
-// Eliminar simulación
-exports.deleteSimulacion = async (id) => {
-  let connection;
-  try {
-    connection = await getConnection();
-    await connection.execute(
-      'DELETE FROM SIMULACION_IMPACTO_FINANCIERO WHERE ID = :id',
-      [id],
-      { autoCommit: true }
-    );
-  } catch (error) {
-    throw new Error('Error al eliminar simulación: ' + error.message);
-  } finally {
-    if (connection) await connection.close();
-  }
+exports.deleteSimulacionFinanciera = async (id) => {
+  const connection = await getConnection();
+  await connection.execute(
+    `DELETE FROM SIMULACION_IMPACTO_FINANCIERO WHERE ID_SIMULACION = :id`,
+    [id],
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Simulación financiera eliminada correctamente' };
 };

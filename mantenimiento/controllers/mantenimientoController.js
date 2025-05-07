@@ -1,32 +1,48 @@
 //aquí está la logica de cada endpoint
-<<<<<<< HEAD
-=======
+
 const mantenimientoService = require('../services/mantenimientoService');
 
-const getAllMantenimientos = async (req, res) => {
-  const mantenimientos = await mantenimientoService.getAllMantenimientos();
-  res.json(mantenimientos);
+exports.getAllMantenimientos = async (req, res, next) => {
+  try {
+    const result = await mantenimientoService.getAllMantenimientos();
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
 };
 
-const getMantenimientoById = async (req, res) => {
-  const mantenimiento = await mantenimientoService.getMantenimientoById(req.params.id);
-  res.json(mantenimiento || { message: "Mantenimiento no encontrado" });
+exports.getMantenimientoById = async (req, res, next) => {
+  try {
+    const result = await mantenimientoService.getMantenimientoById(req.params.id);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
 };
 
-const createMantenimiento = async (req, res) => {
-  const nuevoMantenimiento = await mantenimientoService.createMantenimiento(req.body);
-  res.json(nuevoMantenimiento);
+exports.createMantenimiento = async (req, res, next) => {
+  try {
+    const result = await mantenimientoService.createMantenimiento(req.body);
+    res.status(201).json(result);
+  } catch (err) {
+    next(err);
+  }
 };
 
-const updateMantenimiento = async (req, res) => {
-  const actualizado = await mantenimientoService.updateMantenimiento(req.params.id, req.body);
-  res.json(actualizado ? { message: "Mantenimiento actualizado" } : { message: "Error al actualizar" });
+exports.updateMantenimiento = async (req, res, next) => {
+  try {
+    const result = await mantenimientoService.updateMantenimiento(req.params.id, req.body);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
 };
 
-const deleteMantenimiento = async (req, res) => {
-  await mantenimientoService.deleteMantenimiento(req.params.id);
-  res.json({ message: "Mantenimiento eliminado" });
+exports.deleteMantenimiento = async (req, res, next) => {
+  try {
+    const result = await mantenimientoService.deleteMantenimiento(req.params.id);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
 };
-
-module.exports = { getAllMantenimientos, getMantenimientoById, createMantenimiento, updateMantenimiento, deleteMantenimiento };
->>>>>>> origin/desarrollo/sheyla

@@ -1,60 +1,40 @@
 //servicio para la gestion de .....
+const oracledb = require('oracledb');
 const { getConnection } = require('../../config/db');
 
-const getUsuarios = async () => {
-  const conn = await getConnection();
-  const result = await conn.execute(`SELECT id_usuario, nombre, correo, tipo_usuario FROM Usuarios`);
-  await conn.close();
-  return result.rows;
-};
+// Crear usuario
+exports.createUsuario = async (data) => {
+  const { nombre, correo, contrasena, tipo_usuario } = data;
 
-const getUsuarioById = async (id) => {
-  const conn = await getConnection();
-  const result = await conn.execute(
-    `SELECT id_usuario, nombre, correo, tipo_usuario FROM Usuarios WHERE id_usuario = :id`,
-    [id]
-  );
-  await conn.close();
-  return result.rows[0];
-};
-
-const createUsuario = async ({ nombre, correo, contrasena, tipo_usuario }) => {
-  const conn = await getConnection();
-  await conn.execute(
-    `INSERT INTO Usuarios (nombre, correo, contrasena, tipo_usuario) VALUES (:nombre, :correo, :contrasena, :tipo_usuario)`,
+  const connection = await getConnection();
+  await connection.execute(
+    `INSERT INTO USUARIOS (NOMBRE, CORREO, CONTRASENA, TIPO_USUARIO) VALUES (:nombre, :correo, :contrasena, :tipo_usuario)`,
     { nombre, correo, contrasena, tipo_usuario },
     { autoCommit: true }
   );
-  await conn.close();
-  return { message: 'Usuario creado exitosamente' };
+  await connection.close();
+  return { message: 'Usuario registrado correctamente' };
 };
 
-const updateUsuario = async (id, { nombre, correo, contrasena, tipo_usuario }) => {
-  const conn = await getConnection();
-  await conn.execute(
-    `UPDATE Usuarios SET nombre = :nombre, correo = :correo, contrasena = :contrasena, tipo_usuario = :tipo_usuario WHERE id_usuario = :id`,
-    { nombre, correo, contrasena, tipo_usuario, id },
+// Obtener usuario por correo
+exports.getUsuarioByCorreo = async (correo) => {
+  const connection = await getConnection();
+  const result = await connection.execute(
+    `SELECT * FROM USUARIOS WHERE CORREO = :correo`,
+    [correo]
+  );
+  await connection.close();
+  return result.rows[0];
+};
+
+// Actualizar contraseña
+exports.updateContrasena = async (id_usuario, nueva_contrasena) => {
+  const connection = await getConnection();
+  await connection.execute(
+    `UPDATE USUARIOS SET CONTRASENA = :nueva_contrasena WHERE ID_USUARIO = :id_usuario`,
+    { nueva_contrasena, id_usuario },
     { autoCommit: true }
   );
-  await conn.close();
-  return { message: 'Usuario actualizado correctamente' };
-};
-
-const deleteUsuario = async (id) => {
-  const conn = await getConnection();
-  await conn.execute(
-    `DELETE FROM Usuarios WHERE id_usuario = :id`,
-    { id },
-    { autoCommit: true }
-  );
-  await conn.close();
-  return { message: 'Usuario eliminado exitosamente' };
-};
-
-module.exports = {
-  getUsuarios,
-  getUsuarioById,
-  createUsuario,
-  updateUsuario,
-  deleteUsuario
+  await connection.close();
+  return { message: 'Contraseña actualizada correctamente' };
 };

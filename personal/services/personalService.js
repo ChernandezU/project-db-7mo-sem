@@ -1,29 +1,65 @@
 //servicio para la gestion de .....
-<<<<<<< HEAD
-=======
-const db = require('../../config/db');
+const oracledb = require('oracledb');
+const { getConnection } = require('../../config/db');
 
-const getAllPersonal = async () => {
-  return await db.query('SELECT * FROM Personal');
+exports.getAllPersonal = async () => {
+  const connection = await getConnection();
+  const result = await connection.execute(`SELECT * FROM PERSONAL`);
+  await connection.close();
+  return result.rows;
 };
 
-const getPersonalById = async (id) => {
-  return await db.query('SELECT * FROM Personal WHERE id_personal = ?', [id]);
+exports.getPersonalById = async (id) => {
+  const connection = await getConnection();
+  const result = await connection.execute(
+    `SELECT * FROM PERSONAL WHERE ID_PERSONAL = :id`,
+    [id]
+  );
+  await connection.close();
+  return result.rows[0];
 };
 
-const createPersonal = async (data) => {
-  return await db.query('INSERT INTO Personal (nombre, cargo, contacto) VALUES (?, ?, ?)', 
-  [data.nombre, data.cargo, data.contacto]);
+exports.createPersonal = async (data) => {
+  const { nombre, cargo, contacto } = data;
+
+  const connection = await getConnection();
+  await connection.execute(
+    `INSERT INTO PERSONAL (
+      NOMBRE, CARGO, CONTACTO
+    ) VALUES (
+      :nombre, :cargo, :contacto
+    )`,
+    { nombre, cargo, contacto },
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Personal creado correctamente' };
 };
 
-const updatePersonal = async (id, data) => {
-  return await db.query('UPDATE Personal SET nombre = ?, cargo = ?, contacto = ? WHERE id_personal = ?', 
-  [data.nombre, data.cargo, data.contacto, id]);
+exports.updatePersonal = async (id, data) => {
+  const { nombre, cargo, contacto } = data;
+
+  const connection = await getConnection();
+  await connection.execute(
+    `UPDATE PERSONAL SET
+      NOMBRE = :nombre,
+      CARGO = :cargo,
+      CONTACTO = :contacto
+    WHERE ID_PERSONAL = :id`,
+    { nombre, cargo, contacto, id },
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Personal actualizado correctamente' };
 };
 
-const deletePersonal = async (id) => {
-  return await db.query('DELETE FROM Personal WHERE id_personal = ?', [id]);
+exports.deletePersonal = async (id) => {
+  const connection = await getConnection();
+  await connection.execute(
+    `DELETE FROM PERSONAL WHERE ID_PERSONAL = :id`,
+    [id],
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Personal eliminado correctamente' };
 };
-
-module.exports = { getAllPersonal, getPersonalById, createPersonal, updatePersonal, deletePersonal };
->>>>>>> origin/desarrollo/sheyla

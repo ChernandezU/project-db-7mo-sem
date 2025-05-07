@@ -1,32 +1,47 @@
 //aquí está la logica de cada endpoint
-<<<<<<< HEAD
-=======
 const equipajesService = require('../services/equipajesService');
 
-const getAllEquipajes = async (req, res) => {
-  const equipajes = await equipajesService.getAllEquipajes();
-  res.json(equipajes);
+exports.getAllEquipajes = async (req, res, next) => {
+  try {
+    const result = await equipajesService.getAllEquipajes();
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
 };
 
-const getEquipajeById = async (req, res) => {
-  const equipaje = await equipajesService.getEquipajeById(req.params.id);
-  res.json(equipaje || { message: "Equipaje no encontrado" });
+exports.getEquipajeById = async (req, res, next) => {
+  try {
+    const result = await equipajesService.getEquipajeById(req.params.id);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
 };
 
-const createEquipaje = async (req, res) => {
-  const nuevoEquipaje = await equipajesService.createEquipaje(req.body);
-  res.json(nuevoEquipaje);
+exports.createEquipaje = async (req, res, next) => {
+  try {
+    const result = await equipajesService.createEquipaje(req.body);
+    res.status(201).json(result);
+  } catch (err) {
+    next(err);
+  }
 };
 
-const updateEquipaje = async (req, res) => {
-  const actualizado = await equipajesService.updateEquipaje(req.params.id, req.body);
-  res.json(actualizado ? { message: "Equipaje actualizado" } : { message: "Error al actualizar" });
+exports.updateEquipaje = async (req, res, next) => {
+  try {
+    const result = await equipajesService.updateEquipaje(req.params.id, req.body);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
 };
 
-const deleteEquipaje = async (req, res) => {
-  await equipajesService.deleteEquipaje(req.params.id);
-  res.json({ message: "Equipaje eliminado" });
+exports.deleteEquipaje = async (req, res, next) => {
+  try {
+    const result = await equipajesService.deleteEquipaje(req.params.id);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
 };
-
-module.exports = { getAllEquipajes, getEquipajeById, createEquipaje, updateEquipaje, deleteEquipaje };
->>>>>>> origin/desarrollo/sheyla

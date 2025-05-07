@@ -1,98 +1,55 @@
 //servicio para la gestion de .....
 // Aquí se maneja la lógica de interacción con la base de datos
+const oracledb = require('oracledb');
 const { getConnection } = require('../../config/db');
 
-// Obtener todas las simulaciones de flujo de pasajeros
-exports.getAllSimulaciones = async () => {
-  let connection;
-  try {
-    connection = await getConnection();
-    const result = await connection.execute('SELECT * FROM SIMULACION_FLUJO_PASAJEROS');
-    return result.rows;
-  } catch (error) {
-    throw new Error('Error al obtener las simulaciones de flujo de pasajeros: ' + error.message);
-  } finally {
-    if (connection) {
-      await connection.close();
-    }
-  }
+exports.getAllSimulacionesFlujo = async () => {
+  const conn = await getConnection();
+  const result = await conn.execute(`SELECT * FROM SIMULACION_FLUJO_PASAJEROS`);
+  await conn.close();
+  return result.rows;
 };
 
-// Obtener simulación de flujo de pasajeros por ID
-exports.getSimulacionById = async (id) => {
-  let connection;
-  try {
-    connection = await getConnection();
-    const result = await connection.execute(
-      'SELECT * FROM SIMULACION_FLUJO_PASAJEROS WHERE ID = :id',
-      [id]
-    );
-    return result.rows[0];
-  } catch (error) {
-    throw new Error('Error al obtener la simulación de flujo de pasajeros: ' + error.message);
-  } finally {
-    if (connection) {
-      await connection.close();
-    }
-  }
+exports.getSimulacionFlujoById = async (id) => {
+  const conn = await getConnection();
+  const result = await conn.execute(
+    `SELECT * FROM SIMULACION_FLUJO_PASAJEROS WHERE ID_SIMULACION = :id`,
+    [id]
+  );
+  await conn.close();
+  return result.rows[0];
 };
 
-// Crear nueva simulación de flujo de pasajeros
-exports.createSimulacion = async (simulacion) => {
-  let connection;
-  try {
-    connection = await getConnection();
-    const { descripcion, fecha_simulacion, flujo_pasajeros_estimado } = simulacion;
-    const result = await connection.execute(
-      'INSERT INTO SIMULACION_FLUJO_PASAJEROS (DESCRIPCION, FECHA_SIMULACION, FLUJO_PASAJEROS_ESTIMADO) VALUES (:descripcion, :fecha_simulacion, :flujo_pasajeros_estimado) RETURNING ID INTO :id',
-      [descripcion, fecha_simulacion, flujo_pasajeros_estimado],
-      { outFormat: oracledb.OUT_FORMAT_OBJECT, autoCommit: true }
-    );
-    return result.outBinds.id[0]; // Retorna el ID de la nueva simulación creada
-  } catch (error) {
-    throw new Error('Error al crear la simulación de flujo de pasajeros: ' + error.message);
-  } finally {
-    if (connection) {
-      await connection.close();
-    }
-  }
+exports.createSimulacionFlujo = async ({ fecha_simulacion, total_pasajeros, observaciones }) => {
+  const conn = await getConnection();
+  await conn.execute(
+    `INSERT INTO SIMULACION_FLUJO_PASAJEROS (FECHA_SIMULACION, TOTAL_PASAJEROS, OBSERVACIONES)
+     VALUES (:fecha_simulacion, :total_pasajeros, :observaciones)`,
+    { fecha_simulacion, total_pasajeros, observaciones },
+    { autoCommit: true }
+  );
+  await conn.close();
+  return { message: 'Simulación de flujo creada correctamente' };
 };
 
-// Actualizar simulación de flujo de pasajeros por ID
-exports.updateSimulacion = async (id, cambios) => {
-  let connection;
-  try {
-    connection = await getConnection();
-    const { descripcion, fecha_simulacion, flujo_pasajeros_estimado } = cambios;
-    await connection.execute(
-      'UPDATE SIMULACION_FLUJO_PASAJEROS SET DESCRIPCION = :descripcion, FECHA_SIMULACION = :fecha_simulacion, FLUJO_PASAJEROS_ESTIMADO = :flujo_pasajeros_estimado WHERE ID = :id',
-      [descripcion, fecha_simulacion, flujo_pasajeros_estimado, id],
-      { autoCommit: true }
-    );
-  } catch (error) {
-    throw new Error('Error al actualizar la simulación de flujo de pasajeros: ' + error.message);
-  } finally {
-    if (connection) {
-      await connection.close();
-    }
-  }
+exports.updateSimulacionFlujo = async (id, { fecha_simulacion, total_pasajeros, observaciones }) => {
+  const conn = await getConnection();
+  await conn.execute(
+    `UPDATE SIMULACION_FLUJO_PASAJEROS SET
+     FECHA_SIMULACION = :fecha_simulacion,
+     TOTAL_PASAJEROS = :total_pasajeros,
+     OBSERVACIONES = :observaciones
+     WHERE ID_SIMULACION = :id`,
+    { fecha_simulacion, total_pasajeros, observaciones, id },
+    { autoCommit: true }
+  );
+  await conn.close();
+  return { message: 'Simulación de flujo actualizada correctamente' };
 };
 
-// Eliminar simulación de flujo de pasajeros por ID
-exports.deleteSimulacion = async (id) => {
-  let connection;
-  try {
-    connection = await getConnection();
-    await connection.execute(
-      'DELETE FROM SIMULACION_FLUJO_PASAJEROS WHERE ID = :id',
-      [id],
-      { autoCommit: true }
-    );
-  } catch (error) {
-    throw new Error('Error al eliminar la simulación de flujo de pasajeros: ' + error.message);
-  } finally {
-    if (connection) {
-      await connection.close();
-    }
-  }
+exports.deleteSimulacionFlujo = async (id) => {
+  const conn = await getConnection();
+  await conn.execute(`DELETE FROM SIMULACION_FLUJO_PASAJEROS WHERE ID_SIMULACION = :id`, [id], { autoCommit: true });
+  await conn.close();
+  return { message: 'Simulación de flujo eliminada correctamente' };
 };

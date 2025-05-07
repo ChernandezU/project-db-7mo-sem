@@ -1,41 +1,46 @@
 const vuelosService = require('../services/vuelosService');
 
-// Obtener todos los vuelos
-exports.obtenerVuelos = async (req, res, next) => {
+exports.getAllVuelos = async (req, res, next) => {
   try {
-    const vuelos = await vuelosService.obtenerVuelos();
-    res.status(200).json(vuelos);
-  } catch (error) {
-    next(error);
+    const result = await vuelosService.getAllVuelos();
+    res.json(result);
+  } catch (err) {
+    next(err);
   }
 };
 
-// Crear un nuevo vuelo
-exports.crearVuelo = async (req, res, next) => {
+exports.getVueloById = async (req, res, next) => {
   try {
-    const nuevoVuelo = await vuelosService.crearVuelo(req.body);
-    res.status(201).json(nuevoVuelo);
-  } catch (error) {
-    next(error);
+    const result = await vuelosService.getVueloById(req.params.id);
+    res.json(result);
+  } catch (err) {
+    next(err);
   }
 };
 
-// Actualizar un vuelo
-exports.actualizarVuelo = async (req, res, next) => {
+exports.createVuelo = async (req, res, next) => {
   try {
-    const vueloActualizado = await vuelosService.actualizarVuelo(req.params.id, req.body);
-    res.status(200).json(vueloActualizado);
-  } catch (error) {
-    next(error);
+    const result = await vuelosService.createVuelo(req.body);
+    res.status(201).json(result);
+  } catch (err) {
+    next(err);
   }
 };
 
-// Eliminar un vuelo
-exports.eliminarVuelo = async (req, res, next) => {
+exports.updateVuelo = async (req, res, next) => {
   try {
-    await vuelosService.eliminarVuelo(req.params.id);
-    res.status(204).send();
-  } catch (error) {
-    next(error);
+    const result = await vuelosService.updateVuelo(req.params.id, req.body);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteVuelo = async (req, res, next) => {
+  try {
+    const result = await vuelosService.deleteVuelo(req.params.id);
+    res.json(result);
+  } catch (err) {
+    next(err);
   }
 };

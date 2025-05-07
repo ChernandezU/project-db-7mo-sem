@@ -1,38 +1,47 @@
 //aquí está la logica de cada endpoint
 const avionesService = require('../services/avionesService');
 
-exports.obtenerAviones = async (req, res, next) => {
+exports.getAllAviones = async (req, res) => {
   try {
-    const aviones = await avionesService.obtenerAviones();
-    res.status(200).json(aviones);
+    const data = await avionesService.getAllAviones();
+    res.json(data);
   } catch (error) {
-    next(error);
+    res.status(500).json({ error: 'Error al obtener aviones' });
   }
 };
 
-exports.crearAvion = async (req, res, next) => {
+exports.getAvionById = async (req, res) => {
   try {
-    const nuevoAvion = await avionesService.crearAvion(req.body);
-    res.status(201).json(nuevoAvion);
+    const data = await avionesService.getAvionById(req.params.id);
+    res.json(data);
   } catch (error) {
-    next(error);
+    res.status(500).json({ error: 'Error al obtener avión' });
   }
 };
 
-exports.actualizarAvion = async (req, res, next) => {
+exports.createAvion = async (req, res) => {
   try {
-    const avionActualizado = await avionesService.actualizarAvion(req.params.id, req.body);
-    res.status(200).json(avionActualizado);
+    const result = await avionesService.createAvion(req.body);
+    res.status(201).json(result);
   } catch (error) {
-    next(error);
+    res.status(500).json({ error: 'Error al crear avión' });
   }
 };
 
-exports.eliminarAvion = async (req, res, next) => {
+exports.updateAvion = async (req, res) => {
   try {
-    await avionesService.eliminarAvion(req.params.id);
-    res.status(204).send();
+    const result = await avionesService.updateAvion(req.params.id, req.body);
+    res.json(result);
   } catch (error) {
-    next(error);
+    res.status(500).json({ error: 'Error al actualizar avión' });
+  }
+};
+
+exports.deleteAvion = async (req, res) => {
+  try {
+    const result = await avionesService.deleteAvion(req.params.id);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar avión' });
   }
 };

@@ -1,60 +1,47 @@
 //Aquí se recibe la petición del usuario y se llama a los servicios. Controlas qué se envía como respuesta.
-const oracledb = require('oracledb');
-const { getConnection } = require('../../config/db');
 const programacionMundialService = require('../services/programacionMundialService');
 
-// Obtener todas las programaciones mundiales
 exports.getAllProgramacionesMundiales = async (req, res, next) => {
   try {
-    const data = await programacionMundialService.getAllProgramacionesMundiales();
-    res.json(data);
-  } catch (error) {
-    next(error);
+    const result = await programacionMundialService.getAllProgramacionesMundiales();
+    res.json(result);
+  } catch (err) {
+    next(err);
   }
 };
 
-// Obtener una programación mundial por ID
 exports.getProgramacionMundialById = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const data = await programacionMundialService.getProgramacionMundialById(id);
-    if (!data) return res.status(404).json({ message: 'No encontrado' });
-    res.json(data);
-  } catch (error) {
-    next(error);
+    const result = await programacionMundialService.getProgramacionMundialById(req.params.id);
+    res.json(result);
+  } catch (err) {
+    next(err);
   }
 };
 
-// Crear nueva programación mundial
 exports.createProgramacionMundial = async (req, res, next) => {
   try {
-    const nueva = req.body;
-    const result = await programacionMundialService.createProgramacionMundial(nueva);
-    res.status(201).json({ message: 'Creado exitosamente', id: result });
-  } catch (error) {
-    next(error);
+    const result = await programacionMundialService.createProgramacionMundial(req.body);
+    res.status(201).json(result);
+  } catch (err) {
+    next(err);
   }
 };
 
-// Actualizar programación mundial por ID
 exports.updateProgramacionMundial = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const cambios = req.body;
-    await programacionMundialService.updateProgramacionMundial(id, cambios);
-    res.json({ message: 'Actualizado correctamente' });
-  } catch (error) {
-    next(error);
+    const result = await programacionMundialService.updateProgramacionMundial(req.params.id, req.body);
+    res.json(result);
+  } catch (err) {
+    next(err);
   }
 };
 
-// Eliminar programación mundial por ID
 exports.deleteProgramacionMundial = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    await programacionMundialService.deleteProgramacionMundial(id);
-    res.json({ message: 'Eliminado correctamente' });
-  } catch (error) {
-    next(error);
+    const result = await programacionMundialService.deleteProgramacionMundial(req.params.id);
+    res.json(result);
+  } catch (err) {
+    next(err);
   }
 };

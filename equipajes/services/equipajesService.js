@@ -1,29 +1,78 @@
 //servicio para la gestion de .....
-<<<<<<< HEAD
-=======
-const db = require('../../config/db');
+const oracledb = require('oracledb');
+const { getConnection } = require('../../config/db');
 
-const getAllEquipajes = async () => {
-  return await db.query('SELECT * FROM Equipajes');
+exports.getAllEquipajes = async () => {
+  const connection = await getConnection();
+  const result = await connection.execute(`SELECT * FROM EQUIPAJES`);
+  await connection.close();
+  return result.rows;
 };
 
-const getEquipajeById = async (id) => {
-  return await db.query('SELECT * FROM Equipajes WHERE id_equipaje = ?', [id]);
+exports.getEquipajeById = async (id) => {
+  const connection = await getConnection();
+  const result = await connection.execute(
+    `SELECT * FROM EQUIPAJES WHERE ID_EQUIPAJE = :id`,
+    [id]
+  );
+  await connection.close();
+  return result.rows[0];
 };
 
-const createEquipaje = async (data) => {
-  return await db.query('INSERT INTO Equipajes (id_reserva, peso, dimensiones, estado) VALUES (?, ?, ?, ?)', 
-  [data.id_reserva, data.peso, data.dimensiones, data.estado]);
+exports.createEquipaje = async (data) => {
+  const {
+    ID_PASAJERO, TIPO_EQUIPAJE, PESO_KG, DIMENSIONES,
+    DESCRIPCION, ESTADO, NUM_VUELO_ASOCIADO
+  } = data;
+
+  const connection = await getConnection();
+  await connection.execute(
+    `INSERT INTO EQUIPAJES (
+      ID_PASAJERO, TIPO_EQUIPAJE, PESO_KG, DIMENSIONES,
+      DESCRIPCION, ESTADO, NUM_VUELO_ASOCIADO
+    ) VALUES (
+      :ID_PASAJERO, :TIPO_EQUIPAJE, :PESO_KG, :DIMENSIONES,
+      :DESCRIPCION, :ESTADO, :NUM_VUELO_ASOCIADO
+    )`,
+    {
+      ID_PASAJERO, TIPO_EQUIPAJE, PESO_KG, DIMENSIONES,
+      DESCRIPCION, ESTADO, NUM_VUELO_ASOCIADO
+    },
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Equipaje registrado correctamente' };
 };
 
-const updateEquipaje = async (id, data) => {
-  return await db.query('UPDATE Equipajes SET id_reserva = ?, peso = ?, dimensiones = ?, estado = ? WHERE id_equipaje = ?', 
-  [data.id_reserva, data.peso, data.dimensiones, data.estado, id]);
+exports.updateEquipaje = async (id, data) => {
+  const connection = await getConnection();
+  await connection.execute(
+    `UPDATE EQUIPAJES SET
+      ID_PASAJERO = :ID_PASAJERO,
+      TIPO_EQUIPAJE = :TIPO_EQUIPAJE,
+      PESO_KG = :PESO_KG,
+      DIMENSIONES = :DIMENSIONES,
+      DESCRIPCION = :DESCRIPCION,
+      ESTADO = :ESTADO,
+      NUM_VUELO_ASOCIADO = :NUM_VUELO_ASOCIADO
+    WHERE ID_EQUIPAJE = :ID_EQUIPAJE`,
+    {
+      ...data,
+      ID_EQUIPAJE: id
+    },
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Equipaje actualizado correctamente' };
 };
 
-const deleteEquipaje = async (id) => {
-  return await db.query('DELETE FROM Equipajes WHERE id_equipaje = ?', [id]);
+exports.deleteEquipaje = async (id) => {
+  const connection = await getConnection();
+  await connection.execute(
+    `DELETE FROM EQUIPAJES WHERE ID_EQUIPAJE = :id`,
+    [id],
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Equipaje eliminado correctamente' };
 };
-
-module.exports = { getAllEquipajes, getEquipajeById, createEquipaje, updateEquipaje, deleteEquipaje };
->>>>>>> origin/desarrollo/sheyla

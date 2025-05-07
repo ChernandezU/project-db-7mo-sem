@@ -1,98 +1,68 @@
 //servicio para la gestion de .....
 // Aquí se maneja la lógica de interacción con la base de datos
+const oracledb = require('oracledb');
 const { getConnection } = require('../../config/db');
 
-// Obtener todas las simulaciones de tráfico aéreo
-exports.getAllSimulaciones = async () => {
-  let connection;
-  try {
-    connection = await getConnection();
-    const result = await connection.execute('SELECT * FROM SIMULACION_TRAFICO_AEREO');
-    return result.rows;
-  } catch (error) {
-    throw new Error('Error al obtener las simulaciones de tráfico aéreo: ' + error.message);
-  } finally {
-    if (connection) {
-      await connection.close();
-    }
-  }
+exports.getAllSimulacionesTrafico = async () => {
+  const connection = await getConnection();
+  const result = await connection.execute(`SELECT * FROM SIMULACION_TRAFICO_AEREO`);
+  await connection.close();
+  return result.rows;
 };
 
-// Obtener simulación de tráfico aéreo por ID
-exports.getSimulacionById = async (id) => {
-  let connection;
-  try {
-    connection = await getConnection();
-    const result = await connection.execute(
-      'SELECT * FROM SIMULACION_TRAFICO_AEREO WHERE ID = :id',
-      [id]
-    );
-    return result.rows[0];
-  } catch (error) {
-    throw new Error('Error al obtener la simulación de tráfico aéreo: ' + error.message);
-  } finally {
-    if (connection) {
-      await connection.close();
-    }
-  }
+exports.getSimulacionTraficoById = async (id) => {
+  const connection = await getConnection();
+  const result = await connection.execute(
+    `SELECT * FROM SIMULACION_TRAFICO_AEREO WHERE ID_SIMULACION = :id`,
+    [id]
+  );
+  await connection.close();
+  return result.rows[0];
 };
 
-// Crear nueva simulación de tráfico aéreo
-exports.createSimulacion = async (simulacion) => {
-  let connection;
-  try {
-    connection = await getConnection();
-    const { descripcion, fecha_simulacion, trafico_estimado } = simulacion;
-    const result = await connection.execute(
-      'INSERT INTO SIMULACION_TRAFICO_AEREO (DESCRIPCION, FECHA_SIMULACION, TRAFICO_ESTIMADO) VALUES (:descripcion, :fecha_simulacion, :trafico_estimado) RETURNING ID INTO :id',
-      [descripcion, fecha_simulacion, trafico_estimado],
-      { outFormat: oracledb.OUT_FORMAT_OBJECT, autoCommit: true }
-    );
-    return result.outBinds.id[0]; // Retorna el ID de la nueva simulación creada
-  } catch (error) {
-    throw new Error('Error al crear la simulación de tráfico aéreo: ' + error.message);
-  } finally {
-    if (connection) {
-      await connection.close();
-    }
-  }
+exports.createSimulacionTrafico = async (data) => {
+  const { fecha_simulacion, total_vuelos, vuelos_retrasados, vuelos_cancelados, observaciones } = data;
+
+  const connection = await getConnection();
+  await connection.execute(
+    `INSERT INTO SIMULACION_TRAFICO_AEREO (
+      FECHA_SIMULACION, TOTAL_VUELOS, VUELOS_RETRASADOS, VUELOS_CANCELADOS, OBSERVACIONES
+    ) VALUES (
+      :fecha_simulacion, :total_vuelos, :vuelos_retrasados, :vuelos_cancelados, :observaciones
+    )`,
+    { fecha_simulacion, total_vuelos, vuelos_retrasados, vuelos_cancelados, observaciones },
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Simulación de tráfico aéreo creada correctamente' };
 };
 
-// Actualizar simulación de tráfico aéreo por ID
-exports.updateSimulacion = async (id, cambios) => {
-  let connection;
-  try {
-    connection = await getConnection();
-    const { descripcion, fecha_simulacion, trafico_estimado } = cambios;
-    await connection.execute(
-      'UPDATE SIMULACION_TRAFICO_AEREO SET DESCRIPCION = :descripcion, FECHA_SIMULACION = :fecha_simulacion, TRAFICO_ESTIMADO = :trafico_estimado WHERE ID = :id',
-      [descripcion, fecha_simulacion, trafico_estimado, id],
-      { autoCommit: true }
-    );
-  } catch (error) {
-    throw new Error('Error al actualizar la simulación de tráfico aéreo: ' + error.message);
-  } finally {
-    if (connection) {
-      await connection.close();
-    }
-  }
+exports.updateSimulacionTrafico = async (id, data) => {
+  const { fecha_simulacion, total_vuelos, vuelos_retrasados, vuelos_cancelados, observaciones } = data;
+
+  const connection = await getConnection();
+  await connection.execute(
+    `UPDATE SIMULACION_TRAFICO_AEREO SET
+      FECHA_SIMULACION = :fecha_simulacion,
+      TOTAL_VUELOS = :total_vuelos,
+      VUELOS_RETRASADOS = :vuelos_retrasados,
+      VUELOS_CANCELADOS = :vuelos_cancelados,
+      OBSERVACIONES = :observaciones
+    WHERE ID_SIMULACION = :id`,
+    { fecha_simulacion, total_vuelos, vuelos_retrasados, vuelos_cancelados, observaciones, id },
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Simulación de tráfico aéreo actualizada correctamente' };
 };
 
-// Eliminar simulación de tráfico aéreo por ID
-exports.deleteSimulacion = async (id) => {
-  let connection;
-  try {
-    connection = await getConnection();
-    await connection.execute(
-      'DELETE FROM SIMULACION_TRAFICO_AEREO WHERE ID = :id',
-      [id],
-      { autoCommit: true }
-    );
-  } catch (error) {
-    throw new Error('Error al eliminar la simulación de tráfico aéreo: ' + error.message);
-  } finally {
-    if (connection) {
-      await connection.close();
-    }
-  }
+exports.deleteSimulacionTrafico = async (id) => {
+  const connection = await getConnection();
+  await connection.execute(
+    `DELETE FROM SIMULACION_TRAFICO_AEREO WHERE ID_SIMULACION = :id`,
+    [id],
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Simulación de tráfico aéreo eliminada correctamente' };
 };

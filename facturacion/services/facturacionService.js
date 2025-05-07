@@ -1,63 +1,77 @@
 //servicio para la gestion de .....
+const oracledb = require('oracledb');
 const { getConnection } = require('../../config/db');
 
-const getFacturas = async () => {
-  const conn = await getConnection();
-  const result = await conn.execute(`
-    SELECT id_factura, id_usuario, fecha_emision, total, metodo_pago, estado FROM Facturacion
-  `);
-  await conn.close();
+exports.getAllFacturas = async () => {
+  const connection = await getConnection();
+  const result = await connection.execute(`SELECT * FROM FACTURACION`);
+  await connection.close();
   return result.rows;
 };
 
-const getFacturaById = async (id) => {
-  const conn = await getConnection();
-  const result = await conn.execute(`
-    SELECT id_factura, id_usuario, fecha_emision, total, metodo_pago, estado FROM Facturacion
-    WHERE id_factura = :id
-  `, [id]);
-  await conn.close();
+exports.getFacturaById = async (id) => {
+  const connection = await getConnection();
+  const result = await connection.execute(
+    `SELECT * FROM FACTURACION WHERE ID_FACTURA = :id`,
+    [id]
+  );
+  await connection.close();
   return result.rows[0];
 };
 
-const createFactura = async ({ id_usuario, fecha_emision, total, metodo_pago, estado }) => {
-  const conn = await getConnection();
-  await conn.execute(`
-    INSERT INTO Facturacion (id_usuario, fecha_emision, total, metodo_pago, estado)
-    VALUES (:id_usuario, TO_DATE(:fecha_emision, 'YYYY-MM-DD'), :total, :metodo_pago, :estado)
-  `, { id_usuario, fecha_emision, total, metodo_pago, estado }, { autoCommit: true });
-  await conn.close();
-  return { message: 'Factura creada exitosamente' };
+exports.createFactura = async (data) => {
+  const {
+    ID_PASAJERO, NUM_VUELO, FECHA_FACTURA,
+    MONTO_TOTAL, METODO_PAGO, DETALLE
+  } = data;
+
+  const connection = await getConnection();
+  await connection.execute(
+    `INSERT INTO FACTURACION (
+      ID_PASAJERO, NUM_VUELO, FECHA_FACTURA,
+      MONTO_TOTAL, METODO_PAGO, DETALLE
+    ) VALUES (
+      :ID_PASAJERO, :NUM_VUELO, :FECHA_FACTURA,
+      :MONTO_TOTAL, :METODO_PAGO, :DETALLE
+    )`,
+    {
+      ID_PASAJERO, NUM_VUELO, FECHA_FACTURA,
+      MONTO_TOTAL, METODO_PAGO, DETALLE
+    },
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Factura creada correctamente' };
 };
 
-const updateFactura = async (id, { id_usuario, fecha_emision, total, metodo_pago, estado }) => {
-  const conn = await getConnection();
-  await conn.execute(`
-    UPDATE Facturacion
-    SET id_usuario = :id_usuario,
-        fecha_emision = TO_DATE(:fecha_emision, 'YYYY-MM-DD'),
-        total = :total,
-        metodo_pago = :metodo_pago,
-        estado = :estado
-    WHERE id_factura = :id
-  `, { id_usuario, fecha_emision, total, metodo_pago, estado, id }, { autoCommit: true });
-  await conn.close();
+exports.updateFactura = async (id, data) => {
+  const connection = await getConnection();
+  await connection.execute(
+    `UPDATE FACTURACION SET
+      ID_PASAJERO = :ID_PASAJERO,
+      NUM_VUELO = :NUM_VUELO,
+      FECHA_FACTURA = :FECHA_FACTURA,
+      MONTO_TOTAL = :MONTO_TOTAL,
+      METODO_PAGO = :METODO_PAGO,
+      DETALLE = :DETALLE
+    WHERE ID_FACTURA = :ID_FACTURA`,
+    {
+      ...data,
+      ID_FACTURA: id
+    },
+    { autoCommit: true }
+  );
+  await connection.close();
   return { message: 'Factura actualizada correctamente' };
 };
 
-const deleteFactura = async (id) => {
-  const conn = await getConnection();
-  await conn.execute(`
-    DELETE FROM Facturacion WHERE id_factura = :id
-  `, { id }, { autoCommit: true });
-  await conn.close();
-  return { message: 'Factura eliminada exitosamente' };
-};
-
-module.exports = {
-  getFacturas,
-  getFacturaById,
-  createFactura,
-  updateFactura,
-  deleteFactura
+exports.deleteFactura = async (id) => {
+  const connection = await getConnection();
+  await connection.execute(
+    `DELETE FROM FACTURACION WHERE ID_FACTURA = :id`,
+    [id],
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Factura eliminada correctamente' };
 };

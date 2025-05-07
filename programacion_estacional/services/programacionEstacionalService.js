@@ -1,86 +1,65 @@
 //servicio para la gestion de .....
+const oracledb = require('oracledb');
 const { getConnection } = require('../../config/db');
 
-// Obtener todas las programaciones estacionales
-async function getAllProgramaciones() {
+exports.getAllProgramacionesEstacionales = async () => {
   const connection = await getConnection();
-  const result = await connection.execute(
-    `SELECT ID_PROG_ESTACIONAL, DESCRIPCION, FECHA_INICIO, FECHA_FIN FROM PROGRAMACION_ESTACIONAL`,
-    [],
-    { outFormat: require('oracledb').OUT_FORMAT_OBJECT }
-  );
+  const result = await connection.execute(`SELECT * FROM PROGRAMACION_ESTACIONAL`);
   await connection.close();
   return result.rows;
-}
+};
 
-// Obtener una programación por ID
-async function getProgramacionById(id) {
+exports.getProgramacionEstacionalById = async (id) => {
   const connection = await getConnection();
   const result = await connection.execute(
-    `SELECT ID_PROG_ESTACIONAL, DESCRIPCION, FECHA_INICIO, FECHA_FIN FROM PROGRAMACION_ESTACIONAL WHERE ID_PROG_ESTACIONAL = :id`,
-    [id],
-    { outFormat: require('oracledb').OUT_FORMAT_OBJECT }
+    `SELECT * FROM PROGRAMACION_ESTACIONAL WHERE ID_PROGRAMACION = :id`,
+    [id]
   );
   await connection.close();
   return result.rows[0];
-}
+};
 
-// Crear nueva programación
-async function createProgramacion(data) {
-  const { DESCRIPCION, FECHA_INICIO, FECHA_FIN } = data;
-  const connection = await getConnection();
-  const result = await connection.execute(
-    `INSERT INTO PROGRAMACION_ESTACIONAL (ID_PROG_ESTACIONAL, DESCRIPCION, FECHA_INICIO, FECHA_FIN)
-     VALUES (SEQ_PROG_ESTACIONAL.NEXTVAL, :descripcion, TO_DATE(:fechaInicio, 'YYYY-MM-DD'), TO_DATE(:fechaFin, 'YYYY-MM-DD'))
-     RETURNING ID_PROG_ESTACIONAL INTO :id`,
-    {
-      descripcion: DESCRIPCION,
-      fechaInicio: FECHA_INICIO,
-      fechaFin: FECHA_FIN,
-      id: { dir: require('oracledb').BIND_OUT, type: require('oracledb').NUMBER }
-    }
-  );
-  await connection.commit();
-  await connection.close();
-  return result.outBinds.id[0];
-}
+exports.createProgramacionEstacional = async (data) => {
+  const { id_programa, temporada, descripcion } = data;
 
-// Actualizar programación por ID
-async function updateProgramacion(id, data) {
-  const { DESCRIPCION, FECHA_INICIO, FECHA_FIN } = data;
   const connection = await getConnection();
   await connection.execute(
-    `UPDATE PROGRAMACION_ESTACIONAL
-     SET DESCRIPCION = :descripcion,
-         FECHA_INICIO = TO_DATE(:fechaInicio, 'YYYY-MM-DD'),
-         FECHA_FIN = TO_DATE(:fechaFin, 'YYYY-MM-DD')
-     WHERE ID_PROG_ESTACIONAL = :id`,
-    {
-      descripcion: DESCRIPCION,
-      fechaInicio: FECHA_INICIO,
-      fechaFin: FECHA_FIN,
-      id
-    }
+    `INSERT INTO PROGRAMACION_ESTACIONAL (
+      ID_PROGRAMA, TEMPORADA, DESCRIPCION
+    ) VALUES (
+      :id_programa, :temporada, :descripcion
+    )`,
+    { id_programa, temporada, descripcion },
+    { autoCommit: true }
   );
-  await connection.commit();
   await connection.close();
-}
+  return { message: 'Programación estacional creada correctamente' };
+};
 
-// Eliminar programación por ID
-async function deleteProgramacion(id) {
+exports.updateProgramacionEstacional = async (id, data) => {
+  const { id_programa, temporada, descripcion } = data;
+
   const connection = await getConnection();
   await connection.execute(
-    `DELETE FROM PROGRAMACION_ESTACIONAL WHERE ID_PROG_ESTACIONAL = :id`,
-    [id]
+    `UPDATE PROGRAMACION_ESTACIONAL SET
+      ID_PROGRAMA = :id_programa,
+      TEMPORADA = :temporada,
+      DESCRIPCION = :descripcion
+    WHERE ID_PROGRAMACION = :id`,
+    { id_programa, temporada, descripcion, id },
+    { autoCommit: true }
   );
-  await connection.commit();
   await connection.close();
-}
+  return { message: 'Programación estacional actualizada correctamente' };
+};
 
-module.exports = {
-  getAllProgramaciones,
-  getProgramacionById,
-  createProgramacion,
-  updateProgramacion,
-  deleteProgramacion
+exports.deleteProgramacionEstacional = async (id) => {
+  const connection = await getConnection();
+  await connection.execute(
+    `DELETE FROM PROGRAMACION_ESTACIONAL WHERE ID_PROGRAMACION = :id`,
+    [id],
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Programación estacional eliminada correctamente' };
 };

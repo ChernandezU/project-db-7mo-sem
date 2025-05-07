@@ -1,64 +1,65 @@
 //servicio para la gestion de .....
+const oracledb = require('oracledb');
 const { getConnection } = require('../../config/db');
 
-exports.obtenerInformacion = async () => {
+exports.getAllInformacion = async () => {
   const connection = await getConnection();
-  try {
-    const result = await connection.execute(
-      `SELECT * FROM GESTION_INFORMACION`,
-      [],
-      { outFormat: require('oracledb').OUT_FORMAT_OBJECT }
-    );
-    return result.rows;
-  } finally {
-    await connection.close();
-  }
+  const result = await connection.execute(`SELECT * FROM GESTION_INFORMACION`);
+  await connection.close();
+  return result.rows;
 };
 
-exports.crearInformacion = async (info) => {
-  const { ID_INFORMACION, TIPO, DESCRIPCION, FECHA_REGISTRO } = info;
+exports.getInformacionById = async (id) => {
   const connection = await getConnection();
-  try {
-    await connection.execute(
-      `INSERT INTO GESTION_INFORMACION (ID_INFORMACION, TIPO, DESCRIPCION, FECHA_REGISTRO)
-       VALUES (:ID_INFORMACION, :TIPO, :DESCRIPCION, :FECHA_REGISTRO)`,
-      { ID_INFORMACION, TIPO, DESCRIPCION, FECHA_REGISTRO },
-      { autoCommit: true }
-    );
-    return { mensaje: 'Información registrada exitosamente' };
-  } finally {
-    await connection.close();
-  }
+  const result = await connection.execute(
+    `SELECT * FROM GESTION_INFORMACION WHERE ID_INFO = :id`,
+    [id]
+  );
+  await connection.close();
+  return result.rows[0];
 };
 
-exports.actualizarInformacion = async (id, datos) => {
-  const { TIPO, DESCRIPCION, FECHA_REGISTRO } = datos;
+exports.createInformacion = async (data) => {
+  const { ID_USUARIO, TIPO_INFO, DESCRIPCION, FECHA_REGISTRO, ESTADO } = data;
+
   const connection = await getConnection();
-  try {
-    await connection.execute(
-      `UPDATE GESTION_INFORMACION
-       SET TIPO = :TIPO,
-           DESCRIPCION = :DESCRIPCION,
-           FECHA_REGISTRO = :FECHA_REGISTRO
-       WHERE ID_INFORMACION = :ID_INFORMACION`,
-      { TIPO, DESCRIPCION, FECHA_REGISTRO, ID_INFORMACION: id },
-      { autoCommit: true }
-    );
-    return { mensaje: 'Información actualizada exitosamente' };
-  } finally {
-    await connection.close();
-  }
+  await connection.execute(
+    `INSERT INTO GESTION_INFORMACION (
+      ID_USUARIO, TIPO_INFO, DESCRIPCION, FECHA_REGISTRO, ESTADO
+    ) VALUES (
+      :ID_USUARIO, :TIPO_INFO, :DESCRIPCION, :FECHA_REGISTRO, :ESTADO
+    )`,
+    { ID_USUARIO, TIPO_INFO, DESCRIPCION, FECHA_REGISTRO, ESTADO },
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Información registrada correctamente' };
 };
 
-exports.eliminarInformacion = async (id) => {
+exports.updateInformacion = async (id, data) => {
   const connection = await getConnection();
-  try {
-    await connection.execute(
-      `DELETE FROM GESTION_INFORMACION WHERE ID_INFORMACION = :id`,
-      [id],
-      { autoCommit: true }
-    );
-  } finally {
-    await connection.close();
-  }
+  await connection.execute(
+    `UPDATE GESTION_INFORMACION SET
+      ID_USUARIO = :ID_USUARIO,
+      TIPO_INFO = :TIPO_INFO,
+      DESCRIPCION = :DESCRIPCION,
+      FECHA_REGISTRO = :FECHA_REGISTRO,
+      ESTADO = :ESTADO
+    WHERE ID_INFO = :ID_INFO`,
+    { ...data, ID_INFO: id },
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Información actualizada correctamente' };
+};
+
+exports.deleteInformacion = async (id) => {
+  const connection = await getConnection();
+  await connection.execute(
+    `DELETE FROM GESTION_INFORMACION WHERE ID_INFO = :id`,
+    [id],
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Información eliminada correctamente' };
 };

@@ -1,12 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const programacionMundialController = require('../controllers/programacionMundialController');
+const controller = require('../controllers/programacionMundialController');
 
-// Rutas para programaciones mundiales
-router.get('/', programacionMundialController.getAllProgramacionesMundiales); // Obtener todas las programaciones mundiales
-router.get('/:id', programacionMundialController.getProgramacionMundialById); // Obtener programación mundial por ID
-router.post('/', programacionMundialController.createProgramacionMundial); // Crear nueva programación mundial
-router.put('/:id', programacionMundialController.updateProgramacionMundial); // Actualizar programación mundial por ID
-router.delete('/:id', programacionMundialController.deleteProgramacionMundial); // Eliminar programación mundial por ID
+router.get('/', controller.getAllProgramacionesMundiales);
+router.get('/:id', controller.getProgramacionMundialById);
+router.post('/', controller.createProgramacionMundial);
+router.put('/:id', controller.updateProgramacionMundial);
+router.delete('/:id', controller.deleteProgramacionMundial);
 
 module.exports = router;

@@ -1,58 +1,47 @@
 //aquí está la logica de cada endpoint
 const programacionEstacionalService = require('../services/programacionEstacionalService');
 
-// Obtener todas las programaciones estacionales
-exports.getAllProgramaciones = async (req, res, next) => {
+exports.getAllProgramacionesEstacionales = async (req, res, next) => {
   try {
-    const data = await programacionEstacionalService.getAllProgramaciones();
-    res.json(data);
-  } catch (error) {
-    next(error);
+    const result = await programacionEstacionalService.getAllProgramacionesEstacionales();
+    res.json(result);
+  } catch (err) {
+    next(err);
   }
 };
 
-// Obtener una programación por ID
-exports.getProgramacionById = async (req, res, next) => {
+exports.getProgramacionEstacionalById = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const data = await programacionEstacionalService.getProgramacionById(id);
-    if (!data) return res.status(404).json({ message: 'No encontrado' });
-    res.json(data);
-  } catch (error) {
-    next(error);
+    const result = await programacionEstacionalService.getProgramacionEstacionalById(req.params.id);
+    res.json(result);
+  } catch (err) {
+    next(err);
   }
 };
 
-// Crear nueva programación
-exports.createProgramacion = async (req, res, next) => {
+exports.createProgramacionEstacional = async (req, res, next) => {
   try {
-    const nueva = req.body;
-    const result = await programacionEstacionalService.createProgramacion(nueva);
-    res.status(201).json({ message: 'Creado exitosamente', id: result });
-  } catch (error) {
-    next(error);
+    const result = await programacionEstacionalService.createProgramacionEstacional(req.body);
+    res.status(201).json(result);
+  } catch (err) {
+    next(err);
   }
 };
 
-// Actualizar programación por ID
-exports.updateProgramacion = async (req, res, next) => {
+exports.updateProgramacionEstacional = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const cambios = req.body;
-    await programacionEstacionalService.updateProgramacion(id, cambios);
-    res.json({ message: 'Actualizado correctamente' });
-  } catch (error) {
-    next(error);
+    const result = await programacionEstacionalService.updateProgramacionEstacional(req.params.id, req.body);
+    res.json(result);
+  } catch (err) {
+    next(err);
   }
 };
 
-// Eliminar programación por ID
-exports.deleteProgramacion = async (req, res, next) => {
+exports.deleteProgramacionEstacional = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    await programacionEstacionalService.deleteProgramacion(id);
-    res.json({ message: 'Eliminado correctamente' });
-  } catch (error) {
-    next(error);
+    const result = await programacionEstacionalService.deleteProgramacionEstacional(req.params.id);
+    res.json(result);
+  } catch (err) {
+    next(err);
   }
 };

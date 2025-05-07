@@ -1,13 +1,12 @@
 //Aquí se recibe la petición del usuario y se llama a los controladores. Controlas qué se envía como respuesta.
 const express = require('express');
 const router = express.Router();
-const programacionEstacionalController = require('../controllers/programacionEstacionalController');
+const controller = require('../controllers/programacionEstacionalController');
 
-// Rutas correctamente referenciadas a los métodos exportados
-router.get('/', programacionEstacionalController.getAllProgramaciones);
-router.get('/:id', programacionEstacionalController.getProgramacionById);
-router.post('/', programacionEstacionalController.createProgramacion);
-router.put('/:id', programacionEstacionalController.updateProgramacion);
-router.delete('/:id', programacionEstacionalController.deleteProgramacion);
+router.get('/', controller.getAllProgramacionesEstacionales);
+router.get('/:id', controller.getProgramacionEstacionalById);
+router.post('/', controller.createProgramacionEstacional);
+router.put('/:id', controller.updateProgramacionEstacional);
+router.delete('/:id', controller.deleteProgramacionEstacional);
 
 module.exports = router;

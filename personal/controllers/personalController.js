@@ -1,32 +1,47 @@
 //aquí está la logica de cada endpoint
-<<<<<<< HEAD
-=======
 const personalService = require('../services/personalService');
 
-const getAllPersonal = async (req, res) => {
-  const personal = await personalService.getAllPersonal();
-  res.json(personal);
+exports.getAllPersonal = async (req, res, next) => {
+  try {
+    const result = await personalService.getAllPersonal();
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
 };
 
-const getPersonalById = async (req, res) => {
-  const persona = await personalService.getPersonalById(req.params.id);
-  res.json(persona || { message: "Personal no encontrado" });
+exports.getPersonalById = async (req, res, next) => {
+  try {
+    const result = await personalService.getPersonalById(req.params.id);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
 };
 
-const createPersonal = async (req, res) => {
-  const nuevaPersona = await personalService.createPersonal(req.body);
-  res.json(nuevaPersona);
+exports.createPersonal = async (req, res, next) => {
+  try {
+    const result = await personalService.createPersonal(req.body);
+    res.status(201).json(result);
+  } catch (err) {
+    next(err);
+  }
 };
 
-const updatePersonal = async (req, res) => {
-  const actualizado = await personalService.updatePersonal(req.params.id, req.body);
-  res.json(actualizado ? { message: "Personal actualizado" } : { message: "Error al actualizar" });
+exports.updatePersonal = async (req, res, next) => {
+  try {
+    const result = await personalService.updatePersonal(req.params.id, req.body);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
 };
 
-const deletePersonal = async (req, res) => {
-  await personalService.deletePersonal(req.params.id);
-  res.json({ message: "Personal eliminado" });
+exports.deletePersonal = async (req, res, next) => {
+  try {
+    const result = await personalService.deletePersonal(req.params.id);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
 };
-
-module.exports = { getAllPersonal, getPersonalById, createPersonal, updatePersonal, deletePersonal };
->>>>>>> origin/desarrollo/sheyla

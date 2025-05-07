@@ -1,29 +1,80 @@
 //servicio para la gestion de .....
-<<<<<<< HEAD
-=======
-const db = require('../../config/db');
+const oracledb = require('oracledb');
+const { getConnection } = require('../../config/db');
 
-const getAllMantenimientos = async () => {
-  return await db.query('SELECT * FROM Mantenimiento');
+exports.getAllMantenimientos = async () => {
+  const connection = await getConnection();
+  const result = await connection.execute(`SELECT * FROM MANTENIMIENTO`);
+  await connection.close();
+  return result.rows;
 };
 
-const getMantenimientoById = async (id) => {
-  return await db.query('SELECT * FROM Mantenimiento WHERE id_mantenimiento = ?', [id]);
+exports.getMantenimientoById = async (id) => {
+  const connection = await getConnection();
+  const result = await connection.execute(
+    `SELECT * FROM MANTENIMIENTO WHERE ID_MANTENIMIENTO = :id`,
+    [id]
+  );
+  await connection.close();
+  return result.rows[0];
 };
 
-const createMantenimiento = async (data) => {
-  return await db.query('INSERT INTO Mantenimiento (id_avion, fecha_mantenimiento, descripcion, estado) VALUES (?, ?, ?, ?)', 
-  [data.id_avion, data.fecha_mantenimiento, data.descripcion, data.estado]);
+exports.createMantenimiento = async (data) => {
+  const {
+    ID_AVION,
+    FECHA_INICIO,
+    FECHA_FIN,
+    DESCRIPCION,
+    TIPO_MANTENIMIENTO,
+    ESTADO
+  } = data;
+
+  const connection = await getConnection();
+  await connection.execute(
+    `INSERT INTO MANTENIMIENTO (
+      ID_AVION, FECHA_INICIO, FECHA_FIN, DESCRIPCION, TIPO_MANTENIMIENTO, ESTADO
+    ) VALUES (
+      :ID_AVION, :FECHA_INICIO, :FECHA_FIN, :DESCRIPCION, :TIPO_MANTENIMIENTO, :ESTADO
+    )`,
+    {
+      ID_AVION,
+      FECHA_INICIO,
+      FECHA_FIN,
+      DESCRIPCION,
+      TIPO_MANTENIMIENTO,
+      ESTADO
+    },
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Mantenimiento creado correctamente' };
 };
 
-const updateMantenimiento = async (id, data) => {
-  return await db.query('UPDATE Mantenimiento SET id_avion = ?, fecha_mantenimiento = ?, descripcion = ?, estado = ? WHERE id_mantenimiento = ?', 
-  [data.id_avion, data.fecha_mantenimiento, data.descripcion, data.estado, id]);
+exports.updateMantenimiento = async (id, data) => {
+  const connection = await getConnection();
+  await connection.execute(
+    `UPDATE MANTENIMIENTO SET
+      ID_AVION = :ID_AVION,
+      FECHA_INICIO = :FECHA_INICIO,
+      FECHA_FIN = :FECHA_FIN,
+      DESCRIPCION = :DESCRIPCION,
+      TIPO_MANTENIMIENTO = :TIPO_MANTENIMIENTO,
+      ESTADO = :ESTADO
+    WHERE ID_MANTENIMIENTO = :ID_MANTENIMIENTO`,
+    { ...data, ID_MANTENIMIENTO: id },
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Mantenimiento actualizado correctamente' };
 };
 
-const deleteMantenimiento = async (id) => {
-  return await db.query('DELETE FROM Mantenimiento WHERE id_mantenimiento = ?', [id]);
+exports.deleteMantenimiento = async (id) => {
+  const connection = await getConnection();
+  await connection.execute(
+    `DELETE FROM MANTENIMIENTO WHERE ID_MANTENIMIENTO = :id`,
+    [id],
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Mantenimiento eliminado correctamente' };
 };
-
-module.exports = { getAllMantenimientos, getMantenimientoById, createMantenimiento, updateMantenimiento, deleteMantenimiento };
->>>>>>> origin/desarrollo/sheyla

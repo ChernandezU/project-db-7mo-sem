@@ -1,65 +1,40 @@
 const { getConnection } = require('../../config/db');
 
-exports.obtenerAviones = async () => {
+exports.getAllAviones = async () => {
   const connection = await getConnection();
-  try {
-    const result = await connection.execute(
-      `SELECT * FROM AVIONES`,
-      [],
-      { outFormat: require('oracledb').OUT_FORMAT_OBJECT }
-    );
-    return result.rows;
-  } finally {
-    await connection.close();
-  }
+  const result = await connection.execute('SELECT * FROM AVION');
+  return result.rows;
 };
 
-exports.crearAvion = async (avion) => {
-  const { COD_AVION, MODELO, ESTADO_MANTENIMIENTO, TOTAL_ASIENTOS, OCUPADOS, LIBRES } = avion;
+exports.getAvionById = async (id) => {
   const connection = await getConnection();
-  try {
-    await connection.execute(
-      `INSERT INTO AVIONES (COD_AVION, MODELO, ESTADO_MANTENIMIENTO, TOTAL_ASIENTOS, OCUPADOS, LIBRES)
-       VALUES (:COD_AVION, :MODELO, :ESTADO_MANTENIMIENTO, :TOTAL_ASIENTOS, :OCUPADOS, :LIBRES)`,
-      { COD_AVION, MODELO, ESTADO_MANTENIMIENTO, TOTAL_ASIENTOS, OCUPADOS, LIBRES },
-      { autoCommit: true }
-    );
-    return { mensaje: 'Avión creado exitosamente' };
-  } finally {
-    await connection.close();
-  }
+  const result = await connection.execute('SELECT * FROM AVION WHERE ID_AVION = :id', [id]);
+  return result.rows[0];
 };
 
-exports.actualizarAvion = async (id, datos) => {
-  const { MODELO, ESTADO_MANTENIMIENTO, TOTAL_ASIENTOS, OCUPADOS, LIBRES } = datos;
+exports.createAvion = async (data) => {
   const connection = await getConnection();
-  try {
-    await connection.execute(
-      `UPDATE AVIONES
-       SET MODELO = :MODELO,
-           ESTADO_MANTENIMIENTO = :ESTADO_MANTENIMIENTO,
-           TOTAL_ASIENTOS = :TOTAL_ASIENTOS,
-           OCUPADOS = :OCUPADOS,
-           LIBRES = :LIBRES
-       WHERE COD_AVION = :COD_AVION`,
-      { MODELO, ESTADO_MANTENIMIENTO, TOTAL_ASIENTOS, OCUPADOS, LIBRES, COD_AVION: id },
-      { autoCommit: true }
-    );
-    return { mensaje: 'Avión actualizado exitosamente' };
-  } finally {
-    await connection.close();
-  }
+  const sql = `
+    INSERT INTO AVION (ID_AVION, TIPO, ESTADO, ASIENTOS_OCUPADOS, ASIENTOS_LIBRES)
+    VALUES (:id, :tipo, :estado, :ocupados, :libres)
+  `;
+  await connection.execute(sql, data, { autoCommit: true });
+  return { message: 'Avión creado exitosamente' };
 };
 
-exports.eliminarAvion = async (id) => {
+exports.updateAvion = async (id, data) => {
   const connection = await getConnection();
-  try {
-    await connection.execute(
-      `DELETE FROM AVIONES WHERE COD_AVION = :id`,
-      [id],
-      { autoCommit: true }
-    );
-  } finally {
-    await connection.close();
-  }
+  const sql = `
+    UPDATE AVION
+    SET TIPO = :tipo, ESTADO = :estado, ASIENTOS_OCUPADOS = :ocupados, ASIENTOS_LIBRES = :libres
+    WHERE ID_AVION = :id
+  `;
+  await connection.execute(sql, { ...data, id }, { autoCommit: true });
+  return { message: 'Avión actualizado correctamente' };
+};
+
+exports.deleteAvion = async (id) => {
+  const connection = await getConnection();
+  await connection.execute('DELETE FROM AVION WHERE ID_AVION = :id', [id], { autoCommit: true });
+  return { message: 'Avión eliminado correctamente' };
 };

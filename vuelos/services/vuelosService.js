@@ -1,62 +1,87 @@
+const oracledb = require('oracledb');
 const { getConnection } = require('../../config/db');
 
-// Obtener todos los vuelos
-exports.obtenerVuelos = async () => {
+exports.getAllVuelos = async () => {
   const connection = await getConnection();
-  try {
-    const result = await connection.execute(`SELECT * FROM VUELOS`, [], { outFormat: require('oracledb').OUT_FORMAT_OBJECT });
-    return result.rows;
-  } finally {
-    await connection.close();
-  }
+  const result = await connection.execute(`SELECT * FROM VUELOS`);
+  await connection.close();
+  return result.rows;
 };
 
-// Crear un nuevo vuelo
-exports.crearVuelo = async (vuelo) => {
-  const { COD_VUELO, COD_AVION, COD_AEROLINEA, COD_AEROPUERTO_ORIGEN, COD_AEROPUERTO_DESTINO, FECHA_SALIDA, FECHA_LLEGADA } = vuelo;
+exports.getVueloById = async (id) => {
   const connection = await getConnection();
-  try {
-    await connection.execute(
-      `INSERT INTO VUELOS (COD_VUELO, COD_AVION, COD_AEROLINEA, COD_AEROPUERTO_ORIGEN, COD_AEROPUERTO_DESTINO, FECHA_SALIDA, FECHA_LLEGADA)
-       VALUES (:COD_VUELO, :COD_AVION, :COD_AEROLINEA, :COD_AEROPUERTO_ORIGEN, :COD_AEROPUERTO_DESTINO, TO_DATE(:FECHA_SALIDA, 'YYYY-MM-DD'), TO_DATE(:FECHA_LLEGADA, 'YYYY-MM-DD'))`,
-      { COD_VUELO, COD_AVION, COD_AEROLINEA, COD_AEROPUERTO_ORIGEN, COD_AEROPUERTO_DESTINO, FECHA_SALIDA, FECHA_LLEGADA },
-      { autoCommit: true }
-    );
-    return { mensaje: 'Vuelo creado exitosamente' };
-  } finally {
-    await connection.close();
-  }
+  const result = await connection.execute(
+    `SELECT * FROM VUELOS WHERE ID_VUELO = :id`,
+    [id]
+  );
+  await connection.close();
+  return result.rows[0];
 };
 
-// Actualizar un vuelo
-exports.actualizarVuelo = async (id, datos) => {
-  const { COD_AVION, COD_AEROLINEA, COD_AEROPUERTO_ORIGEN, COD_AEROPUERTO_DESTINO, FECHA_SALIDA, FECHA_LLEGADA } = datos;
+exports.createVuelo = async (data) => {
+  const {
+    ID_AVION,
+    ORIGEN,
+    DESTINO,
+    FECHA_SALIDA,
+    FECHA_LLEGADA,
+    HORA_SALIDA,
+    HORA_LLEGADA,
+    ESTADO
+  } = data;
+
   const connection = await getConnection();
-  try {
-    await connection.execute(
-      `UPDATE VUELOS
-       SET COD_AVION = :COD_AVION,
-           COD_AEROLINEA = :COD_AEROLINEA,
-           COD_AEROPUERTO_ORIGEN = :COD_AEROPUERTO_ORIGEN,
-           COD_AEROPUERTO_DESTINO = :COD_AEROPUERTO_DESTINO,
-           FECHA_SALIDA = TO_DATE(:FECHA_SALIDA, 'YYYY-MM-DD'),
-           FECHA_LLEGADA = TO_DATE(:FECHA_LLEGADA, 'YYYY-MM-DD')
-       WHERE COD_VUELO = :COD_VUELO`,
-      { COD_AVION, COD_AEROLINEA, COD_AEROPUERTO_ORIGEN, COD_AEROPUERTO_DESTINO, FECHA_SALIDA, FECHA_LLEGADA, COD_VUELO: id },
-      { autoCommit: true }
-    );
-    return { mensaje: 'Vuelo actualizado exitosamente' };
-  } finally {
-    await connection.close();
-  }
+  await connection.execute(
+    `INSERT INTO VUELOS (
+      ID_AVION, ORIGEN, DESTINO, FECHA_SALIDA, FECHA_LLEGADA,
+      HORA_SALIDA, HORA_LLEGADA, ESTADO
+    ) VALUES (
+      :ID_AVION, :ORIGEN, :DESTINO, :FECHA_SALIDA, :FECHA_LLEGADA,
+      :HORA_SALIDA, :HORA_LLEGADA, :ESTADO
+    )`,
+    {
+      ID_AVION,
+      ORIGEN,
+      DESTINO,
+      FECHA_SALIDA,
+      FECHA_LLEGADA,
+      HORA_SALIDA,
+      HORA_LLEGADA,
+      ESTADO
+    },
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Vuelo creado correctamente' };
 };
 
-// Eliminar un vuelo
-exports.eliminarVuelo = async (id) => {
+exports.updateVuelo = async (id, data) => {
   const connection = await getConnection();
-  try {
-    await connection.execute(`DELETE FROM VUELOS WHERE COD_VUELO = :id`, [id], { autoCommit: true });
-  } finally {
-    await connection.close();
-  }
+  await connection.execute(
+    `UPDATE VUELOS SET
+      ID_AVION = :ID_AVION,
+      ORIGEN = :ORIGEN,
+      DESTINO = :DESTINO,
+      FECHA_SALIDA = :FECHA_SALIDA,
+      FECHA_LLEGADA = :FECHA_LLEGADA,
+      HORA_SALIDA = :HORA_SALIDA,
+      HORA_LLEGADA = :HORA_LLEGADA,
+      ESTADO = :ESTADO
+    WHERE ID_VUELO = :ID_VUELO`,
+    { ...data, ID_VUELO: id },
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Vuelo actualizado correctamente' };
+};
+
+exports.deleteVuelo = async (id) => {
+  const connection = await getConnection();
+  await connection.execute(
+    `DELETE FROM VUELOS WHERE ID_VUELO = :id`,
+    [id],
+    { autoCommit: true }
+  );
+  await connection.close();
+  return { message: 'Vuelo eliminado correctamente' };
 };
