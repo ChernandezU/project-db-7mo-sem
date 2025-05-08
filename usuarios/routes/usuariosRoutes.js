@@ -3,16 +3,20 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/usuariosController');
 
+
 // Ruta para registrar usuario
 router.post('/register', controller.registerUsuario);
+
+// Ruta para obtener el perfil
+router.get('/perfil', controller.getPerfil);
 
 // Ruta para login de usuario
 router.post('/login', controller.loginUsuario);
 
 // Ruta para recuperar contraseña
-router.post('/recover-password', controller.recoverPassword);
+router.put('/update-password', controller.updateContrasena); // Sin autenticación
 
 // Ruta para restablecer contraseña
-router.post('/reset-password', controller.resetPassword);
+router.post('/reset-password', controller.resetPasswordWithToken);
 
 module.exports = router;

@@ -1,6 +1,9 @@
 const express = require('express');
 const app = express();
 const errorHandler = require('./usuarios/middlewares/errorHandler'); // Middleware global de errores
+require("dotenv").config();
+console.log("🔍 API Key cargada:", process.env.MAILGUN_API_KEY);
+console.log("🔍 Dominio Mailgun:", process.env.MAILGUN_DOMAIN);
 
 // Importación de rutas
 const usuariosRoutes = require('./usuarios/routes/usuariosRoutes');
