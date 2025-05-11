@@ -1,9 +1,25 @@
 const express = require('express');
 const app = express();
+const cors = require('cors');
 const errorHandler = require('./usuarios/middlewares/errorHandler'); // Middleware global de errores
 require("dotenv").config();
 console.log("🔍 API Key cargada:", process.env.MAILGUN_API_KEY);
 console.log("🔍 Dominio Mailgun:", process.env.MAILGUN_DOMAIN);
+
+
+
+
+// Permitir CORS desde tu frontend (puede ser * durante desarrollo)
+app.use(cors({
+  origin: 'http://localhost:5173',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+
+app.use(express.json());
+
+
 
 // Importación de rutas
 const usuariosRoutes = require('./usuarios/routes/usuariosRoutes');
@@ -34,15 +50,15 @@ const personalRoutes = require('./personal/routes/personalRoutes');
 
 
 
-const cuentaRoutes = require('./cuentas/routes/cuentaRoutes');
-const licenciaRoutes = require('./licencias/routes/licenciaRoutes');
-const pistaRoutes = require('./pistas/routes/pistaRoutes');
-const mantenimientoPistaRoutes = require('./mantenimiento_pistas/routes/mantenimientoPistaRoutes');
-const carroRoutes = require('./carros/routes/carroRoutes');
-const transporteRoutes = require('./transporte/routes/transporteRoutes');
-const checkInRoutes = require('./checkin/routes/checkinRoutes');
-const portalRoutes = require('./portales/routes/portalRoutes');
-const visaRoutes = require('./visas/routes/visaRoutes');
+//const cuentasRoutes = require('./cuentas/routes/cuentasRoutes');
+//const licenciaRoutes = require('./licencias/routes/licenciaRoutes');
+//const pistaRoutes = require('./pistas/routes/pistaRoutes');
+//const mantenimientoPistaRoutes = require('./mantenimiento_pistas/routes/mantenimientoPistaRoutes');
+//const carroRoutes = require('./carros/routes/carroRoutes');
+//const transporteRoutes = require('./transporte/routes/transporteRoutes');
+//const checkInRoutes = require('./checkin/routes/checkinRoutes');
+//const portalRoutes = require('./portales/routes/portalRoutes');
+//const visaRoutes = require('./visas/routes/visaRoutes');
 
 
 
@@ -79,27 +95,29 @@ app.use('/api/personal', personalRoutes);
 
 
 
-app.use('/api/cuentas', cuentaRoutes);
-app.use('/api/licencias', licenciaRoutes);
-app.use('/api/pistas', pistaRoutes);
-app.use('/api/mantenimiento-pistas', mantenimientoPistaRoutes);
-app.use('/api/carros', carroRoutes);
-app.use('/api/transporte', transporteRoutes);
-app.use('/api/checkin', checkInRoutes);
-app.use('/api/portales', portalRoutes);
-app.use('/api/visas', visaRoutes);
+//app.use('/api/cuentas', cuentasRoutes);
+//app.use('/api/licencias', licenciaRoutes);
+//app.use('/api/pistas', pistaRoutes);
+//app.use('/api/mantenimiento-pistas', mantenimientoPistaRoutes);
+//app.use('/api/carros', carroRoutes);
+//app.use('/api/transporte', transporteRoutes);
+//app.use('/api/checkin', checkInRoutes);
+//app.use('/api/portales', portalRoutes);
+//app.use('/api/visas', visaRoutes);
 
 
 // Manejo de errores global
 app.use(errorHandler);
 
+// Middleware para parsear JSON
+app.use(express.json());
+
+// Configuración del servidor
 const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+const HOST = '0.0.0.0';
+
+app.listen(PORT, HOST, () => {
+    console.log(`Servidor corriendo en http://${HOST}:${PORT}`);
 });
 
 module.exports = app;
-
-
-
-//para levantar el proyecto es node server.js
