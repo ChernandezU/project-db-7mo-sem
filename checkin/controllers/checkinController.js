@@ -1,6 +1,6 @@
 //aquí está la logica de cada endpoint
 // Controlador para la tabla Portales
-const checkInService = require('../services/checkInService');
+const checkInService = require('../services/checkinService');
 
 exports.getAllCheckIns = async (req, res, next) => {
   try {
