@@ -37,20 +37,28 @@ exports.createFactura = async (data) => {
     throw new Error('La reserva especificada no existe.');
   }
 
+  // Obtener monto de equipaje asociado a la reserva
+  const montoEquipaje = await connection.execute(
+    `SELECT NVL(SUM(monto_equipaje), 0) AS monto_equipaje FROM PAGOS WHERE ID_FACTURA = (SELECT ID_FACTURA FROM FACTURACION WHERE ID_RESERVA = :id_reserva)`,
+    [id_reserva]
+  );
+
+  const totalFactura = monto + montoEquipaje.rows[0].MONTO_EQUIPAJE;
+
   try {
     await connection.execute('BEGIN');
 
     await connection.execute(
       `INSERT INTO FACTURACION (ID_FACTURA, ID_RESERVA, MONTO, FECHA_FACTURA)
-       VALUES (seq_facturacion.NEXTVAL, :id_reserva, :monto, SYSDATE)`,
-      { id_reserva, monto }
+       VALUES (seq_facturacion.NEXTVAL, :id_reserva, :totalFactura, SYSDATE)`,
+      { id_reserva, totalFactura }
     );
 
     // Auditoría de creación de factura
     await connection.execute(
       `INSERT INTO AUDITORIA_FACTURACION (ID_FACTURA, ID_RESERVA, MONTO, FECHA_CAMBIO, ACCION)
-       VALUES (seq_facturacion.CURRVAL, :id_reserva, :monto, SYSDATE, 'Creación')`,
-      { id_reserva, monto }
+       VALUES (seq_facturacion.CURRVAL, :id_reserva, :totalFactura, SYSDATE, 'Creación')`,
+      { id_reserva, totalFactura }
     );
 
     await connection.execute('COMMIT');

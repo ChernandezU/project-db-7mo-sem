@@ -1,4 +1,3 @@
-//servicio para la gestion de .....
 const oracledb = require('oracledb');
 const { getConnection } = require('../../config/db');
 
@@ -23,9 +22,9 @@ exports.getHorarioVueloById = async (id) => {
   return result.rows[0];
 };
 
-// Crear un nuevo horario de vuelo con validación y auditoría
+// Crear un nuevo horario de vuelo con validaciones y auditoría
 exports.createHorarioVuelo = async (data) => {
-  const { id_vuelo, hora_salida, hora_llegada, estado } = data;
+  const { id_vuelo, hora_salida, hora_llegada, zona_horaria, estado } = data;
   const connection = await getConnection();
 
   // Validar que el vuelo existe
@@ -38,13 +37,18 @@ exports.createHorarioVuelo = async (data) => {
     throw new Error('El vuelo especificado no existe.');
   }
 
+  // Validar estado
+  if (!['Programado', 'Confirmado', 'Cancelado', 'Demorado'].includes(estado)) {
+    throw new Error("Estado inválido. Debe ser 'Programado', 'Confirmado', 'Cancelado' o 'Demorado'.");
+  }
+
   // Validar que no haya solapamiento de horarios
   const conflictoHorarios = await connection.execute(
-    `SELECT COUNT(*) AS total FROM HORARIOS_VUELOS 
-     WHERE ID_VUELO = :id_vuelo AND 
-           (hora_salida BETWEEN :hora_salida AND :hora_llegada 
+    `SELECT COUNT(*) AS total FROM HORARIOS_VUELOS
+     WHERE ID_VUELO = :id_vuelo AND ZONA_HORARIA = :zona_horaria AND
+           (hora_salida BETWEEN :hora_salida AND :hora_llegada
            OR hora_llegada BETWEEN :hora_salida AND :hora_llegada)`,
-    { id_vuelo, hora_salida, hora_llegada }
+    { id_vuelo, zona_horaria, hora_salida, hora_llegada }
   );
 
   if (conflictoHorarios.rows[0].TOTAL > 0) {
@@ -55,9 +59,9 @@ exports.createHorarioVuelo = async (data) => {
     await connection.execute('BEGIN');
 
     await connection.execute(
-      `INSERT INTO HORARIOS_VUELOS (ID_HORARIO, ID_VUELO, HORA_SALIDA, HORA_LLEGADA, ESTADO, VERSION)
-       VALUES (seq_horarios_vuelos.NEXTVAL, :id_vuelo, :hora_salida, :hora_llegada, :estado, 1)`,
-      { id_vuelo, hora_salida, hora_llegada, estado }
+      `INSERT INTO HORARIOS_VUELOS (ID_HORARIO, ID_VUELO, HORA_SALIDA, HORA_LLEGADA, ZONA_HORARIA, ESTADO)
+       VALUES (seq_horarios_vuelos.NEXTVAL, :id_vuelo, :hora_salida, :hora_llegada, :zona_horaria, :estado)`,
+      { id_vuelo, hora_salida, hora_llegada, zona_horaria, estado }
     );
 
     // Auditoría de creación
@@ -77,21 +81,21 @@ exports.createHorarioVuelo = async (data) => {
   return { message: 'Horario de vuelo creado correctamente' };
 };
 
-// Actualizar horario de vuelo con manejo de versiones y auditoría
-exports.updateHorarioVuelo = async (id, data, version_actual) => {
+// Actualizar horario de vuelo con validaciones
+exports.updateHorarioVuelo = async (id, data) => {
   const connection = await getConnection();
 
   try {
     await connection.execute('BEGIN');
 
     const result = await connection.execute(
-      `UPDATE HORARIOS_VUELOS SET ESTADO = :estado, VERSION = VERSION + 1 
-       WHERE ID_HORARIO = :id AND VERSION = :version_actual`,
-      { estado: data.estado, id, version_actual }
+      `UPDATE HORARIOS_VUELOS SET ESTADO = :estado, ZONA_HORARIA = :zona_horaria
+       WHERE ID_HORARIO = :id`,
+      { estado: data.estado, zona_horaria: data.zona_horaria, id }
     );
 
     if (result.rowsAffected === 0) {
-      throw new Error('Otro usuario ya modificó este horario. Recarga la página e intenta nuevamente.');
+      throw new Error('La actualización no se realizó. Verifica los datos e intenta nuevamente.');
     }
 
     // Auditoría de actualización
@@ -118,10 +122,7 @@ exports.deleteHorarioVuelo = async (id) => {
   try {
     await connection.execute('BEGIN');
 
-    await connection.execute(
-      `DELETE FROM HORARIOS_VUELOS WHERE ID_HORARIO = :id`,
-      [id]
-    );
+    await connection.execute(`DELETE FROM HORARIOS_VUELOS WHERE ID_HORARIO = :id`, [id]);
 
     // Auditoría de eliminación
     await connection.execute(

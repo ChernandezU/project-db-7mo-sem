@@ -1,77 +1,59 @@
-//aquí está la logica de cada endpoint
 const horariosVuelosService = require('../services/horariosVuelosService');
 
-// Obtener todos los horarios de vuelo
-const getAllHorariosVuelos = async (req, res) => {
+exports.getAllHorariosVuelos = async (req, res, next) => {
   try {
-    const horariosVuelos = await horariosVuelosService.getAllHorariosVuelos();
-    res.status(200).json(horariosVuelos);
+    const result = await horariosVuelosService.getAllHorariosVuelos();
+    res.json(result);
   } catch (err) {
-    res.status(500).json({ message: 'Error al obtener los horarios de vuelo', error: err.message });
+    next(err);
   }
 };
 
-// Obtener un horario de vuelo por ID
-const getHorarioVueloById = async (req, res) => {
+exports.getHorarioVueloById = async (req, res, next) => {
   try {
-    const id = req.params.id;
-    const horarioVuelo = await horariosVuelosService.getHorarioVueloById(id);
-    if (horarioVuelo) {
-      res.status(200).json(horarioVuelo);
-    } else {
-      res.status(404).json({ message: 'Horario de vuelo no encontrado' });
+    const result = await horariosVuelosService.getHorarioVueloById(req.params.id);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.createHorarioVuelo = async (req, res, next) => {
+  try {
+    const { id_vuelo, hora_salida, hora_llegada, zona_horaria, estado } = req.body;
+
+    if (!['Programado', 'Confirmado', 'Cancelado', 'Demorado'].includes(estado)) {
+      return res.status(400).json({ message: "Estado inválido. Debe ser 'Programado', 'Confirmado', 'Cancelado' o 'Demorado'." });
     }
-  } catch (err) {
-    res.status(500).json({ message: 'Error al obtener el horario de vuelo', error: err.message });
-  }
-};
 
-// Crear un nuevo horario de vuelo
-const createHorarioVuelo = async (req, res) => {
-  try {
-    const nuevoHorario = req.body;
-    const result = await horariosVuelosService.createHorarioVuelo(nuevoHorario);
+    const result = await horariosVuelosService.createHorarioVuelo({
+      id_vuelo,
+      hora_salida,
+      hora_llegada,
+      zona_horaria,
+      estado
+    });
+
     res.status(201).json(result);
   } catch (err) {
-    res.status(500).json({ message: 'Error al crear el horario de vuelo', error: err.message });
+    next(err);
   }
 };
 
-// Actualizar un horario de vuelo por ID
-const updateHorarioVuelo = async (req, res) => {
+exports.updateHorarioVuelo = async (req, res, next) => {
   try {
-    const id = req.params.id;
-    const horarioActualizado = req.body;
-    const result = await horariosVuelosService.updateHorarioVuelo(id, horarioActualizado);
-    if (result) {
-      res.status(200).json(result);
-    } else {
-      res.status(404).json({ message: 'Horario de vuelo no encontrado' });
-    }
+    const result = await horariosVuelosService.updateHorarioVuelo(req.params.id, req.body);
+    res.json(result);
   } catch (err) {
-    res.status(500).json({ message: 'Error al actualizar el horario de vuelo', error: err.message });
+    next(err);
   }
 };
 
-// Eliminar un horario de vuelo por ID
-const deleteHorarioVuelo = async (req, res) => {
+exports.deleteHorarioVuelo = async (req, res, next) => {
   try {
-    const id = req.params.id;
-    const result = await horariosVuelosService.deleteHorarioVuelo(id);
-    if (result) {
-      res.status(200).json({ message: 'Horario de vuelo eliminado con éxito' });
-    } else {
-      res.status(404).json({ message: 'Horario de vuelo no encontrado' });
-    }
+    const result = await horariosVuelosService.deleteHorarioVuelo(req.params.id);
+    res.json(result);
   } catch (err) {
-    res.status(500).json({ message: 'Error al eliminar el horario de vuelo', error: err.message });
+    next(err);
   }
-};
-
-module.exports = {
-  getAllHorariosVuelos,
-  getHorarioVueloById,
-  createHorarioVuelo,
-  updateHorarioVuelo,
-  deleteHorarioVuelo
 };

@@ -1,4 +1,3 @@
-//servicio para la gestion de .....
 const oracledb = require('oracledb');
 const { getConnection } = require('../../config/db');
 
@@ -23,9 +22,9 @@ exports.getPagoById = async (id) => {
   return result.rows[0];
 };
 
-// Crear un nuevo pago con validaciones
+// Crear un nuevo pago incluyendo monto de equipaje y detalle de transacción
 exports.createPago = async (data) => {
-  const { id_factura, metodo_pago, monto_pagado } = data;
+  const { id_factura, metodo_pago, monto_pagado, monto_equipaje, detalle_pago } = data;
   const connection = await getConnection();
 
   // Validar que la factura exista
@@ -46,7 +45,7 @@ exports.createPago = async (data) => {
     [id_factura]
   );
 
-  if (totalPagado.rows[0].TOTAL + monto_pagado > monto_factura) {
+  if (totalPagado.rows[0].TOTAL + monto_pagado + monto_equipaje > monto_factura) {
     throw new Error('El pago excede el monto total de la factura.');
   }
 
@@ -54,16 +53,16 @@ exports.createPago = async (data) => {
     await connection.execute('BEGIN');
 
     await connection.execute(
-      `INSERT INTO PAGOS (ID_PAGO, ID_FACTURA, METODO_PAGO, MONTO_PAGADO, FECHA_PAGO)
-       VALUES (seq_pagos.NEXTVAL, :id_factura, :metodo_pago, :monto_pagado, SYSDATE)`,
-      { id_factura, metodo_pago, monto_pagado }
+      `INSERT INTO PAGOS (ID_PAGO, ID_FACTURA, METODO_PAGO, MONTO_PAGADO, MONTO_EQUIPAJE, DETALLE_PAGO, FECHA_PAGO)
+       VALUES (seq_pagos.NEXTVAL, :id_factura, :metodo_pago, :monto_pagado, :monto_equipaje, :detalle_pago, SYSDATE)`,
+      { id_factura, metodo_pago, monto_pagado, monto_equipaje, detalle_pago }
     );
 
     // Auditoría de pago
     await connection.execute(
-      `INSERT INTO AUDITORIA_PAGOS (ID_PAGO, ID_FACTURA, MONTO, METODO_PAGO, FECHA_CAMBIO, ACCION)
-       VALUES (seq_pagos.CURRVAL, :id_factura, :monto_pagado, :metodo_pago, SYSDATE, 'Creación')`,
-      { id_factura, monto_pagado, metodo_pago }
+      `INSERT INTO AUDITORIA_PAGOS (ID_PAGO, ID_FACTURA, MONTO, MONTO_EQUIPAJE, METODO_PAGO, DETALLE_PAGO, FECHA_CAMBIO, ACCION)
+       VALUES (seq_pagos.CURRVAL, :id_factura, :monto_pagado, :monto_equipaje, :metodo_pago, :detalle_pago, SYSDATE, 'Creación')`,
+      { id_factura, monto_pagado, monto_equipaje, metodo_pago, detalle_pago }
     );
 
     await connection.execute('COMMIT');
@@ -78,16 +77,16 @@ exports.createPago = async (data) => {
 
 // Actualizar pago con auditoría
 exports.updatePago = async (id, data) => {
-  const { metodo_pago, monto_pagado } = data;
+  const { metodo_pago, monto_pagado, monto_equipaje, detalle_pago } = data;
   const connection = await getConnection();
 
   try {
     await connection.execute('BEGIN');
 
     const result = await connection.execute(
-      `UPDATE PAGOS SET METODO_PAGO = :metodo_pago, MONTO_PAGADO = :monto_pagado
+      `UPDATE PAGOS SET METODO_PAGO = :metodo_pago, MONTO_PAGADO = :monto_pagado, MONTO_EQUIPAJE = :monto_equipaje, DETALLE_PAGO = :detalle_pago
        WHERE ID_PAGO = :id`,
-      { metodo_pago, monto_pagado, id }
+      { metodo_pago, monto_pagado, monto_equipaje, detalle_pago, id }
     );
 
     if (result.rowsAffected === 0) {
@@ -96,9 +95,9 @@ exports.updatePago = async (id, data) => {
 
     // Auditoría de actualización
     await connection.execute(
-      `INSERT INTO AUDITORIA_PAGOS (ID_PAGO, ID_FACTURA, MONTO, METODO_PAGO, FECHA_CAMBIO, ACCION)
-       VALUES (:id, (SELECT ID_FACTURA FROM PAGOS WHERE ID_PAGO = :id), :monto_pagado, :metodo_pago, SYSDATE, 'Actualización')`,
-      { id, monto_pagado, metodo_pago }
+      `INSERT INTO AUDITORIA_PAGOS (ID_PAGO, ID_FACTURA, MONTO, MONTO_EQUIPAJE, METODO_PAGO, DETALLE_PAGO, FECHA_CAMBIO, ACCION)
+       VALUES (:id, (SELECT ID_FACTURA FROM PAGOS WHERE ID_PAGO = :id), :monto_pagado, :monto_equipaje, :metodo_pago, :detalle_pago, SYSDATE, 'Actualización')`,
+      { id, monto_pagado, monto_equipaje, metodo_pago, detalle_pago }
     );
 
     await connection.execute('COMMIT');
@@ -118,10 +117,7 @@ exports.deletePago = async (id) => {
   try {
     await connection.execute('BEGIN');
 
-    await connection.execute(
-      `DELETE FROM PAGOS WHERE ID_PAGO = :id`,
-      [id]
-    );
+    await connection.execute(`DELETE FROM PAGOS WHERE ID_PAGO = :id`, [id]);
 
     // Auditoría de eliminación
     await connection.execute(

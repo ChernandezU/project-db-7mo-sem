@@ -20,7 +20,40 @@ exports.getVueloById = async (req, res, next) => {
 
 exports.createVuelo = async (req, res, next) => {
   try {
-    const result = await vuelosService.createVuelo(req.body);
+    const {
+      ID_AVION,
+      ORIGEN,
+      DESTINO,
+      FECHA_SALIDA,
+      FECHA_LLEGADA,
+      HORA_SALIDA,
+      HORA_LLEGADA,
+      ESTADO,
+      CAPACIDAD_MAXIMA,
+      TIPO_VUELO
+    } = req.body;
+
+    if (!['activo', 'cancelado', 'finalizado', 'demorado'].includes(ESTADO)) {
+      return res.status(400).json({ message: "Estado de vuelo inválido. Debe ser 'activo', 'cancelado', 'finalizado' o 'demorado'." });
+    }
+
+    if (!['nacional', 'internacional'].includes(TIPO_VUELO)) {
+      return res.status(400).json({ message: "Tipo de vuelo inválido. Debe ser 'nacional' o 'internacional'." });
+    }
+
+    const result = await vuelosService.createVuelo({
+      ID_AVION,
+      ORIGEN,
+      DESTINO,
+      FECHA_SALIDA,
+      FECHA_LLEGADA,
+      HORA_SALIDA,
+      HORA_LLEGADA,
+      ESTADO,
+      CAPACIDAD_MAXIMA,
+      TIPO_VUELO
+    });
+
     res.status(201).json(result);
   } catch (err) {
     next(err);

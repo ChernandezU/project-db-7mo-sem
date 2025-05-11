@@ -2,7 +2,7 @@
 const oracledb = require('oracledb');
 
 const dbConfig = {
-  user: 'VNSB30',
+  user: 'VNSB32',
   password: 'Umg$2025',
   connectString: '181.114.16.49:1521/oracle' // IP:PUERTO/SID corregido
 };

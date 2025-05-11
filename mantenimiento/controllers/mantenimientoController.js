@@ -1,5 +1,3 @@
-//aquí está la logica de cada endpoint
-
 const mantenimientoService = require('../services/mantenimientoService');
 
 exports.getAllMantenimientos = async (req, res, next) => {
@@ -22,7 +20,26 @@ exports.getMantenimientoById = async (req, res, next) => {
 
 exports.createMantenimiento = async (req, res, next) => {
   try {
-    const result = await mantenimientoService.createMantenimiento(req.body);
+    const { id_avion, fecha_inicio, fecha_fin, descripcion, tipo_mantenimiento, tipo_revision, estado } = req.body;
+
+    if (!['Pendiente', 'En proceso', 'Finalizado'].includes(estado)) {
+      return res.status(400).json({ message: "Estado inválido. Debe ser 'Pendiente', 'En proceso' o 'Finalizado'." });
+    }
+
+    if (!['preventivo', 'correctivo'].includes(tipo_revision)) {
+      return res.status(400).json({ message: "Tipo de revisión inválido. Debe ser 'preventivo' o 'correctivo'." });
+    }
+
+    const result = await mantenimientoService.createMantenimiento({
+      id_avion,
+      fecha_inicio,
+      fecha_fin,
+      descripcion,
+      tipo_mantenimiento,
+      tipo_revision,
+      estado
+    });
+
     res.status(201).json(result);
   } catch (err) {
     next(err);

@@ -1,4 +1,3 @@
-//aquí está la logica de cada endpoint
 const escalasService = require('../services/escalasTecnicasService');
 
 exports.getAllEscalas = async (req, res, next) => {
@@ -21,7 +20,26 @@ exports.getEscalaById = async (req, res, next) => {
 
 exports.createEscala = async (req, res, next) => {
   try {
-    const result = await escalasService.createEscala(req.body);
+    const { id_vuelo, pais, ciudad, aeropuerto, codigo_iata_aeropuerto, fecha_hora_llegada, fecha_hora_salida, duracion_estimada, duracion_real, estado_escala, observaciones } = req.body;
+
+    if (!['Pendiente', 'Completada', 'Cancelada'].includes(estado_escala)) {
+      return res.status(400).json({ message: "Estado inválido. Debe ser 'Pendiente', 'Completada' o 'Cancelada'." });
+    }
+
+    const result = await escalasService.createEscala({
+      id_vuelo,
+      pais,
+      ciudad,
+      aeropuerto,
+      codigo_iata_aeropuerto,
+      fecha_hora_llegada,
+      fecha_hora_salida,
+      duracion_estimada,
+      duracion_real,
+      estado_escala,
+      observaciones
+    });
+
     res.status(201).json(result);
   } catch (err) {
     next(err);

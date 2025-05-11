@@ -1,4 +1,3 @@
-//servicio para la gestion de .....
 const oracledb = require('oracledb');
 const { getConnection } = require('../../config/db');
 
@@ -23,9 +22,9 @@ exports.getEquipajeById = async (id) => {
   return result.rows[0];
 };
 
-// Crear un nuevo equipaje con validaciones y auditoría
+// Crear un nuevo equipaje sin estado
 exports.createEquipaje = async (data) => {
-  const { id_reserva, tipo_equipaje, peso_kg, dimensiones, descripcion, estado, num_vuelo_asociado } = data;
+  const { id_reserva, tipo_equipaje, peso, dimensiones, descripcion, id_vuelo } = data;
   const connection = await getConnection();
 
   // Validar que la reserva exista
@@ -42,9 +41,9 @@ exports.createEquipaje = async (data) => {
     await connection.execute('BEGIN');
 
     await connection.execute(
-      `INSERT INTO EQUIPAJES (ID_EQUIPAJE, ID_RESERVA, TIPO_EQUIPAJE, PESO_KG, DIMENSIONES, DESCRIPCION, ESTADO, NUM_VUELO_ASOCIADO, VERSION)
-       VALUES (seq_equipajes.NEXTVAL, :id_reserva, :tipo_equipaje, :peso_kg, :dimensiones, :descripcion, :estado, :num_vuelo_asociado, 1)`,
-      { id_reserva, tipo_equipaje, peso_kg, dimensiones, descripcion, estado, num_vuelo_asociado }
+      `INSERT INTO EQUIPAJES (ID_EQUIPAJE, ID_RESERVA, TIPO_EQUIPAJE, PESO, DIMENSIONES, DESCRIPCION, ID_VUELO)
+       VALUES (seq_equipajes.NEXTVAL, :id_reserva, :tipo_equipaje, :peso, :dimensiones, :descripcion, :id_vuelo)`,
+      { id_reserva, tipo_equipaje, peso, dimensiones, descripcion, id_vuelo }
     );
 
     // Auditoría de creación
@@ -64,21 +63,21 @@ exports.createEquipaje = async (data) => {
   return { message: 'Equipaje registrado correctamente' };
 };
 
-// Actualizar equipaje con manejo de versiones y auditoría
-exports.updateEquipaje = async (id, data, version_actual) => {
+// Actualizar equipaje sin estado
+exports.updateEquipaje = async (id, data) => {
   const connection = await getConnection();
 
   try {
     await connection.execute('BEGIN');
 
     const result = await connection.execute(
-      `UPDATE EQUIPAJES SET TIPO_EQUIPAJE = :tipo_equipaje, PESO_KG = :peso_kg, VERSION = VERSION + 1 
-       WHERE ID_EQUIPAJE = :id AND VERSION = :version_actual`,
-      { tipo_equipaje: data.tipo_equipaje, peso_kg: data.peso_kg, id, version_actual }
+      `UPDATE EQUIPAJES SET TIPO_EQUIPAJE = :tipo_equipaje, PESO = :peso
+       WHERE ID_EQUIPAJE = :id`,
+      { tipo_equipaje: data.tipo_equipaje, peso: data.peso, id }
     );
 
     if (result.rowsAffected === 0) {
-      throw new Error('Otro usuario ya modificó este equipaje. Recarga la página e intenta nuevamente.');
+      throw new Error('La actualización no se realizó. Verifica los datos e intenta nuevamente.');
     }
 
     // Auditoría de actualización
@@ -105,10 +104,7 @@ exports.deleteEquipaje = async (id) => {
   try {
     await connection.execute('BEGIN');
 
-    await connection.execute(
-      `DELETE FROM EQUIPAJES WHERE ID_EQUIPAJE = :id`,
-      [id]
-    );
+    await connection.execute(`DELETE FROM EQUIPAJES WHERE ID_EQUIPAJE = :id`, [id]);
 
     // Auditoría de eliminación
     await connection.execute(

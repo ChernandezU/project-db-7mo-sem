@@ -22,9 +22,9 @@ exports.getMantenimientoById = async (id) => {
   return result.rows[0];
 };
 
-// Crear un nuevo mantenimiento con validaciones y auditoría
+// Crear un nuevo mantenimiento incluyendo tipo de revisión y validaciones
 exports.createMantenimiento = async (data) => {
-  const { id_avion, fecha_inicio, fecha_fin, descripcion, tipo_mantenimiento, estado } = data;
+  const { id_avion, fecha_inicio, fecha_fin, descripcion, tipo_mantenimiento, tipo_revision, estado } = data;
   const connection = await getConnection();
 
   // Validar que el avión existe
@@ -37,13 +37,23 @@ exports.createMantenimiento = async (data) => {
     throw new Error('El avión especificado no existe.');
   }
 
+  // Validar estado
+  if (!['Pendiente', 'En proceso', 'Finalizado'].includes(estado)) {
+    throw new Error("Estado inválido. Debe ser 'Pendiente', 'En proceso' o 'Finalizado'.");
+  }
+
+  // Validar tipo de revisión
+  if (!['preventivo', 'correctivo'].includes(tipo_revision)) {
+    throw new Error("Tipo de revisión inválido. Debe ser 'preventivo' o 'correctivo'.");
+  }
+
   try {
     await connection.execute('BEGIN');
 
     await connection.execute(
-      `INSERT INTO MANTENIMIENTO (ID_MANTENIMIENTO, ID_AVION, FECHA_INICIO, FECHA_FIN, DESCRIPCION, TIPO_MANTENIMIENTO, ESTADO, VERSION)
-       VALUES (seq_mantenimiento.NEXTVAL, :id_avion, :fecha_inicio, :fecha_fin, :descripcion, :tipo_mantenimiento, :estado, 1)`,
-      { id_avion, fecha_inicio, fecha_fin, descripcion, tipo_mantenimiento, estado }
+      `INSERT INTO MANTENIMIENTO (ID_MANTENIMIENTO, ID_AVION, FECHA_INICIO, FECHA_FIN, DESCRIPCION, TIPO_MANTENIMIENTO, TIPO_REVISION, ESTADO)
+       VALUES (seq_mantenimiento.NEXTVAL, :id_avion, :fecha_inicio, :fecha_fin, :descripcion, :tipo_mantenimiento, :tipo_revision, :estado)`,
+      { id_avion, fecha_inicio, fecha_fin, descripcion, tipo_mantenimiento, tipo_revision, estado }
     );
 
     // Auditoría de creación
@@ -63,8 +73,8 @@ exports.createMantenimiento = async (data) => {
   return { message: 'Mantenimiento creado correctamente' };
 };
 
-// Actualizar mantenimiento con manejo de versiones y auditoría
-exports.updateMantenimiento = async (id, data, version_actual) => {
+// Actualizar mantenimiento con validaciones
+exports.updateMantenimiento = async (id, data) => {
   const connection = await getConnection();
 
   // Verificar si el mantenimiento ya está finalizado
@@ -81,13 +91,13 @@ exports.updateMantenimiento = async (id, data, version_actual) => {
     await connection.execute('BEGIN');
 
     const result = await connection.execute(
-      `UPDATE MANTENIMIENTO SET DESCRIPCION = :descripcion, VERSION = VERSION + 1 
-       WHERE ID_MANTENIMIENTO = :id AND VERSION = :version_actual`,
-      { descripcion: data.descripcion, id, version_actual }
+      `UPDATE MANTENIMIENTO SET DESCRIPCION = :descripcion, TIPO_REVISION = :tipo_revision
+       WHERE ID_MANTENIMIENTO = :id`,
+      { descripcion: data.descripcion, tipo_revision: data.tipo_revision, id }
     );
 
     if (result.rowsAffected === 0) {
-      throw new Error('Otro usuario ya modificó este mantenimiento. Recarga la página e intenta nuevamente.');
+      throw new Error('La actualización no se realizó. Verifica los datos e intenta nuevamente.');
     }
 
     // Auditoría de actualización
@@ -114,10 +124,7 @@ exports.deleteMantenimiento = async (id) => {
   try {
     await connection.execute('BEGIN');
 
-    await connection.execute(
-      `DELETE FROM MANTENIMIENTO WHERE ID_MANTENIMIENTO = :id`,
-      [id]
-    );
+    await connection.execute(`DELETE FROM MANTENIMIENTO WHERE ID_MANTENIMIENTO = :id`, [id]);
 
     // Auditoría de eliminación
     await connection.execute(

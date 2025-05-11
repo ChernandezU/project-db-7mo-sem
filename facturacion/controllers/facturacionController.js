@@ -1,4 +1,3 @@
-//aquí está la logica de cada endpoint
 const facturacionService = require('../services/facturacionService');
 
 exports.getAllFacturas = async (req, res, next) => {
@@ -21,7 +20,13 @@ exports.getFacturaById = async (req, res, next) => {
 
 exports.createFactura = async (req, res, next) => {
   try {
-    const result = await facturacionService.createFactura(req.body);
+    const { id_reserva, monto } = req.body;
+
+    const result = await facturacionService.createFactura({
+      id_reserva,
+      monto
+    });
+
     res.status(201).json(result);
   } catch (err) {
     next(err);
@@ -30,7 +35,12 @@ exports.createFactura = async (req, res, next) => {
 
 exports.updateFactura = async (req, res, next) => {
   try {
-    const result = await facturacionService.updateFactura(req.params.id, req.body);
+    const { monto } = req.body;
+
+    const result = await facturacionService.updateFactura(req.params.id, {
+      monto
+    });
+
     res.json(result);
   } catch (err) {
     next(err);
