@@ -32,6 +32,21 @@ const mercanciaRoutes = require('./mercancias/routes/mercanciaRoutes');
 const escalasTecnicasRoutes = require('./escalas_tecnicas/routes/escalasTecnicasRoutes');
 const personalRoutes = require('./personal/routes/personalRoutes');
 
+
+
+const cuentaRoutes = require('./cuentas/routes/cuentaRoutes');
+const licenciaRoutes = require('./licencias/routes/licenciaRoutes');
+const pistaRoutes = require('./pistas/routes/pistaRoutes');
+const mantenimientoPistaRoutes = require('./mantenimiento_pistas/routes/mantenimientoPistaRoutes');
+const carroRoutes = require('./carros/routes/carroRoutes');
+const transporteRoutes = require('./transporte/routes/transporteRoutes');
+const checkInRoutes = require('./checkin/routes/checkinRoutes');
+const portalRoutes = require('./portales/routes/portalRoutes');
+const visaRoutes = require('./visas/routes/visaRoutes');
+
+
+
+
 // Middleware global
 app.use(express.json());
 
@@ -62,6 +77,17 @@ app.use('/api/escalas-tecnicas', escalasTecnicasRoutes);
 app.use('/api/mantenimiento', mantenimientoRoutes);
 app.use('/api/personal', personalRoutes);
 
+
+
+app.use('/api/cuentas', cuentaRoutes);
+app.use('/api/licencias', licenciaRoutes);
+app.use('/api/pistas', pistaRoutes);
+app.use('/api/mantenimiento-pistas', mantenimientoPistaRoutes);
+app.use('/api/carros', carroRoutes);
+app.use('/api/transporte', transporteRoutes);
+app.use('/api/checkin', checkInRoutes);
+app.use('/api/portales', portalRoutes);
+app.use('/api/visas', visaRoutes);
 
 
 // Manejo de errores global
