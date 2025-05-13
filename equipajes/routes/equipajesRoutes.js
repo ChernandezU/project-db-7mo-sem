@@ -6,7 +6,6 @@ const equipajesController = require('../controllers/equipajesController');
 router.get('/', equipajesController.getAllEquipajes);
 router.get('/:id', equipajesController.getEquipajeById);
 router.post('/', equipajesController.createEquipaje);
-router.put('/:id', equipajesController.updateEquipaje);
 router.delete('/:id', equipajesController.deleteEquipaje);
 
 module.exports = router;

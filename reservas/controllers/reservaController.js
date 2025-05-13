@@ -49,31 +49,4 @@ exports.createReserva = async (req, res, next) => {
   }
 };
 
-// Actualizar reserva incluyendo `checkin_status`
-exports.updateReserva = async (req, res, next) => {
-  try {
-    const { asiento, checkin_status } = req.body;
 
-    if (checkin_status && !['pendiente', 'completado'].includes(checkin_status)) {
-      return res.status(400).json({ message: "Estado de check-in inválido. Debe ser 'pendiente' o 'completado'." });
-    }
-
-    const result = await reservaService.updateReserva(req.params.id, {
-      asiento,
-      checkin_status
-    });
-
-    res.json(result);
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.deleteReserva = async (req, res, next) => {
-  try {
-    const result = await reservaService.deleteReserva(req.params.id);
-    res.json(result);
-  } catch (err) {
-    next(err);
-  }
-};

@@ -24,48 +24,54 @@ exports.getEscalaById = async (id) => {
 
 // Crear una nueva escala técnica con validaciones y auditoría
 exports.createEscala = async (data) => {
-  const { id_vuelo, pais, ciudad, aeropuerto, codigo_iata_aeropuerto, fecha_hora_llegada, fecha_hora_salida, duracion_estimada, duracion_real, estado_escala, observaciones } = data;
+  const { id_vuelo, orden, id_aeropuerto_intermedio, hora_escala } = data;
   const connection = await getConnection();
 
-  // Validar que el vuelo existe
-  const vueloExistente = await connection.execute(
-    `SELECT COUNT(*) AS total FROM VUELOS WHERE ID_VUELO = :id_vuelo`,
-    [id_vuelo]
-  );
-
-  if (vueloExistente.rows[0].TOTAL === 0) {
-    throw new Error('El vuelo especificado no existe.');
-  }
-
-  // Validar estado de escala
-  if (!['Pendiente', 'Completada', 'Cancelada'].includes(estado_escala)) {
-    throw new Error("Estado inválido. Debe ser 'Pendiente', 'Completada' o 'Cancelada'.");
-  }
+  console.log('📌 Datos recibidos:', JSON.stringify(data, null, 2));
 
   try {
     await connection.execute('BEGIN');
 
-    await connection.execute(
-      `INSERT INTO ESCALAS_TECNICAS (ID_ESCALA, ID_VUELO, PAIS, CIUDAD, AEROPUERTO, CODIGO_IATA_AEROPUERTO, FECHA_HORA_LLEGADA, FECHA_HORA_SALIDA, DURACION_ESTIMADA, DURACION_REAL, ESTADO_ESCALA, OBSERVACIONES)
-       VALUES (seq_escalas_tecnicas.NEXTVAL, :id_vuelo, :pais, :ciudad, :aeropuerto, :codigo_iata_aeropuerto, :fecha_hora_llegada, :fecha_hora_salida, :duracion_estimada, :duracion_real, :estado_escala, :observaciones)`,
-      { id_vuelo, pais, ciudad, aeropuerto, codigo_iata_aeropuerto, fecha_hora_llegada, fecha_hora_salida, duracion_estimada, duracion_real, estado_escala, observaciones }
-    );
-
-    // Auditoría de creación
-    await connection.execute(
-      `INSERT INTO AUDITORIA_ESCALAS_TECNICAS (ID_ESCALA, ID_VUELO, FECHA_CAMBIO, ACCION)
-       VALUES (seq_escalas_tecnicas.CURRVAL, :id_vuelo, SYSDATE, 'Creación')`,
+    // 🔎 Validar que el vuelo existe antes de insertar
+    const vueloExistente = await connection.execute(
+      `SELECT COUNT(*) AS total FROM VUELOS WHERE ID_VUELO = :id_vuelo`,
       { id_vuelo }
     );
 
-    await connection.execute('COMMIT');
-  } catch (err) {
-    await connection.execute('ROLLBACK');
-    throw err;
-  }
+    if (vueloExistente.rows[0].TOTAL === 0) {
+      throw new Error('El vuelo especificado no existe.');
+    }
 
-  await connection.close();
-  return { message: 'Escala técnica creada correctamente' };
+    // ✅ Corregimos `hora_escala` y aseguramos que se envíe en el formato correcto
+    let horaEscalaValue = null;
+    if (hora_escala) {
+      const fecha = new Date(hora_escala);
+      horaEscalaValue = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')} ${String(fecha.getHours()).padStart(2, '0')}:${String(fecha.getMinutes()).padStart(2, '0')}:${String(fecha.getSeconds()).padStart(2, '0')}`;
+    }
+
+    console.log('🚀 Ejecutando INSERT de escala técnica...');
+    console.log('📌 ID Vuelo:', id_vuelo);
+    console.log('📌 Orden:', orden);
+    console.log('📌 ID Aeropuerto Intermedio:', id_aeropuerto_intermedio);
+    console.log('📌 Hora Escala procesada:', horaEscalaValue);
+
+    // ✅ Modificamos el `INSERT` para que `hora_escala` se procese correctamente
+    const result = await connection.execute(
+      `INSERT INTO ESCALAS_TECNICAS (ID_VUELO, ORDEN, ID_AEROPUERTO_INTERMEDIO, HORA_ESCALA) 
+       VALUES (:id_vuelo, :orden, :id_aeropuerto_intermedio, TO_TIMESTAMP(:hora_escala, 'YYYY-MM-DD HH24:MI:SS'))`,
+      { id_vuelo, orden, id_aeropuerto_intermedio, hora_escala: horaEscalaValue },
+      { autoCommit: true }
+    );
+
+    console.log('✔ Escala técnica insertada correctamente:', result);
+
+    await connection.close();
+    return { message: 'Escala técnica creada correctamente.', success: true };
+  } catch (error) {
+    console.error('🚨 Error en la inserción:', error.stack);
+    await connection.close();
+    return { error: `Error al crear la escala técnica: ${error.message}`, success: false };
+  }
 };
 
 // Actualizar escala técnica con validaciones

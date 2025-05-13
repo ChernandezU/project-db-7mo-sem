@@ -20,44 +20,23 @@ exports.getVueloById = async (req, res, next) => {
 
 exports.createVuelo = async (req, res, next) => {
   try {
-    const {
-      ID_AVION,
-      ORIGEN,
-      DESTINO,
-      FECHA_SALIDA,
-      FECHA_LLEGADA,
-      HORA_SALIDA,
-      HORA_LLEGADA,
-      ESTADO,
-      CAPACIDAD_MAXIMA,
-      TIPO_VUELO
-    } = req.body;
+    const { id_programa, fecha, plazas_disponibles, id_avion, estado } = req.body;
 
-    if (!['activo', 'cancelado', 'finalizado', 'demorado'].includes(ESTADO)) {
-      return res.status(400).json({ message: "Estado de vuelo inválido. Debe ser 'activo', 'cancelado', 'finalizado' o 'demorado'." });
+    if (!id_programa || !fecha || !plazas_disponibles || !id_avion || !estado) {
+      return res.status(400).json({ message: 'Faltan parámetros obligatorios en la solicitud.' });
     }
 
-    if (!['nacional', 'internacional'].includes(TIPO_VUELO)) {
-      return res.status(400).json({ message: "Tipo de vuelo inválido. Debe ser 'nacional' o 'internacional'." });
+    if (!['activo', 'cancelado', 'finalizado'].includes(estado.trim())) {
+      return res.status(400).json({ message: "Estado de vuelo inválido. Debe ser 'activo', 'cancelado' o 'finalizado'." });
     }
 
-    const result = await vuelosService.createVuelo({
-      ID_AVION,
-      ORIGEN,
-      DESTINO,
-      FECHA_SALIDA,
-      FECHA_LLEGADA,
-      HORA_SALIDA,
-      HORA_LLEGADA,
-      ESTADO,
-      CAPACIDAD_MAXIMA,
-      TIPO_VUELO
-    });
-
+    const result = await vuelosService.createVuelo({ id_programa, fecha, plazas_disponibles, id_avion, estado });
     res.status(201).json(result);
   } catch (err) {
     next(err);
   }
+  console.log('Datos en req.body:', req.body);
+console.log('id_programa recibido:', req.body.id_programa);
 };
 
 exports.updateVuelo = async (req, res, next) => {

@@ -1,7 +1,7 @@
 const oracledb = require('oracledb');
 const { getConnection } = require('../../config/db');
 
-// Obtener todos los pagos
+// Obtener todos los pagos con concurrencia optimizada
 exports.getAllPagos = async () => {
   const connection = await getConnection();
   const result = await connection.execute(
@@ -22,12 +22,12 @@ exports.getPagoById = async (id) => {
   return result.rows[0];
 };
 
-// Crear un nuevo pago incluyendo monto de equipaje y detalle de transacción
+// Crear pago asegurando validaciones y auditoría
 exports.createPago = async (data) => {
   const { id_factura, metodo_pago, monto_pagado, monto_equipaje, detalle_pago } = data;
   const connection = await getConnection();
 
-  // Validar que la factura exista
+  // Validar existencia de factura
   const factura = await connection.execute(
     `SELECT monto FROM FACTURACION WHERE ID_FACTURA = :id_factura`,
     [id_factura]
@@ -39,7 +39,7 @@ exports.createPago = async (data) => {
 
   const monto_factura = factura.rows[0].MONTO;
 
-  // Verificar que los pagos previos no excedan el monto de la factura
+  // Validar pagos previos
   const totalPagado = await connection.execute(
     `SELECT COALESCE(SUM(MONTO_PAGADO), 0) AS total FROM PAGOS WHERE ID_FACTURA = :id_factura`,
     [id_factura]
@@ -53,8 +53,8 @@ exports.createPago = async (data) => {
     await connection.execute('BEGIN');
 
     await connection.execute(
-      `INSERT INTO PAGOS (ID_PAGO, ID_FACTURA, METODO_PAGO, MONTO_PAGADO, MONTO_EQUIPAJE, DETALLE_PAGO, FECHA_PAGO)
-       VALUES (seq_pagos.NEXTVAL, :id_factura, :metodo_pago, :monto_pagado, :monto_equipaje, :detalle_pago, SYSDATE)`,
+      `INSERT INTO PAGOS (ID_FACTURA, METODO_PAGO, MONTO_PAGADO, MONTO_EQUIPAJE, DETALLE_PAGO, FECHA_PAGO, VERSION)
+       VALUES (:id_factura, :metodo_pago, :monto_pagado, :monto_equipaje, :detalle_pago, SYSDATE, 1)`,
       { id_factura, metodo_pago, monto_pagado, monto_equipaje, detalle_pago }
     );
 
@@ -75,29 +75,28 @@ exports.createPago = async (data) => {
   return { message: 'Pago registrado correctamente' };
 };
 
-// Actualizar pago con auditoría
+// Actualizar pago con validaciones y concurrencia
 exports.updatePago = async (id, data) => {
-  const { metodo_pago, monto_pagado, monto_equipaje, detalle_pago } = data;
   const connection = await getConnection();
 
   try {
     await connection.execute('BEGIN');
 
     const result = await connection.execute(
-      `UPDATE PAGOS SET METODO_PAGO = :metodo_pago, MONTO_PAGADO = :monto_pagado, MONTO_EQUIPAJE = :monto_equipaje, DETALLE_PAGO = :detalle_pago
-       WHERE ID_PAGO = :id`,
-      { metodo_pago, monto_pagado, monto_equipaje, detalle_pago, id }
+      `UPDATE PAGOS SET METODO_PAGO = :metodo_pago, MONTO_PAGADO = :monto_pagado, MONTO_EQUIPAJE = :monto_equipaje, DETALLE_PAGO = :detalle_pago, VERSION = VERSION + 1
+       WHERE ID_PAGO = :id AND VERSION = :version_actual`,
+      { metodo_pago: data.metodo_pago, monto_pagado: data.monto_pagado, monto_equipaje: data.monto_equipaje, detalle_pago: data.detalle_pago, id, version_actual: data.version }
     );
 
     if (result.rowsAffected === 0) {
-      throw new Error('No se encontró el pago especificado.');
+      throw new Error('Otro usuario ya modificó este pago. Recarga la página e intenta nuevamente.');
     }
 
     // Auditoría de actualización
     await connection.execute(
       `INSERT INTO AUDITORIA_PAGOS (ID_PAGO, ID_FACTURA, MONTO, MONTO_EQUIPAJE, METODO_PAGO, DETALLE_PAGO, FECHA_CAMBIO, ACCION)
        VALUES (:id, (SELECT ID_FACTURA FROM PAGOS WHERE ID_PAGO = :id), :monto_pagado, :monto_equipaje, :metodo_pago, :detalle_pago, SYSDATE, 'Actualización')`,
-      { id, monto_pagado, monto_equipaje, metodo_pago, detalle_pago }
+      { id, monto_pagado: data.monto_pagado, monto_equipaje: data.monto_equipaje, metodo_pago: data.metodo_pago, detalle_pago: data.detalle_pago }
     );
 
     await connection.execute('COMMIT');

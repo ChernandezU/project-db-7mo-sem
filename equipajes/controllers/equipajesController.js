@@ -20,33 +20,17 @@ exports.getEquipajeById = async (req, res, next) => {
 
 exports.createEquipaje = async (req, res, next) => {
   try {
-    const { id_reserva, tipo_equipaje, peso, dimensiones, descripcion, id_vuelo } = req.body;
+    const { id_reserva, peso, dimensiones, estado } = req.body;
 
-    const result = await equipajesService.createEquipaje({
-      id_reserva,
-      tipo_equipaje,
-      peso,
-      dimensiones,
-      descripcion,
-      id_vuelo
-    });
+    console.log('Datos recibidos en el controlador:', { id_reserva, peso, dimensiones, estado });
 
-    res.status(201).json(result);
-  } catch (err) {
-    next(err);
-  }
-};
+    const result = await equipajesService.createEquipaje({ id_reserva, peso, dimensiones, estado });
 
-exports.updateEquipaje = async (req, res, next) => {
-  try {
-    const { tipo_equipaje, peso } = req.body;
-
-    const result = await equipajesService.updateEquipaje(req.params.id, {
-      tipo_equipaje,
-      peso
-    });
-
-    res.json(result);
+    if (result.success) {
+      return res.status(201).json(result);
+    } else {
+      return res.status(500).json(result);
+    }
   } catch (err) {
     next(err);
   }

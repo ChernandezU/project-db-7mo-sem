@@ -1,6 +1,6 @@
 const aeropuertosService = require('../services/aeropuertosService');
 
-exports.getAllAeropuertos = async (req, res) => {
+exports.getAllAeropuertos = async (req, res) => {           //
   try {
     const data = await aeropuertosService.getAllAeropuertos();
     res.json(data);
@@ -9,7 +9,7 @@ exports.getAllAeropuertos = async (req, res) => {
   }
 };
 
-exports.getAeropuertoById = async (req, res) => {
+exports.getAeropuertoById = async (req, res) => {            //
   try {
     const data = await aeropuertosService.getAeropuertoById(req.params.id);
     res.json(data);
@@ -18,7 +18,7 @@ exports.getAeropuertoById = async (req, res) => {
   }
 };
 
-exports.createAeropuerto = async (req, res) => {
+exports.createAeropuerto = async (req, res) => {             //
   try {
     const result = await aeropuertosService.createAeropuerto(req.body);
     res.status(201).json(result);
@@ -27,7 +27,7 @@ exports.createAeropuerto = async (req, res) => {
   }
 };
 
-exports.updateAeropuerto = async (req, res) => {
+exports.updateAeropuerto = async (req, res) => {             //
   try {
     const result = await aeropuertosService.updateAeropuerto(req.params.id, req.body);
     res.json(result);
@@ -36,7 +36,7 @@ exports.updateAeropuerto = async (req, res) => {
   }
 };
 
-exports.deleteAeropuerto = async (req, res) => {
+exports.deleteAeropuerto = async (req, res) => {              //
   try {
     const result = await aeropuertosService.deleteAeropuerto(req.params.id);
     res.json(result);

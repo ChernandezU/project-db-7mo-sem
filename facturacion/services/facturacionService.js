@@ -1,7 +1,7 @@
 const oracledb = require('oracledb');
 const { getConnection } = require('../../config/db');
 
-// Obtener todas las facturas con bloqueo seguro
+// Obtener todas las facturas con concurrencia optimizada
 exports.getAllFacturas = async () => {
   const connection = await getConnection();
   const result = await connection.execute(
@@ -22,12 +22,12 @@ exports.getFacturaById = async (id) => {
   return result.rows[0];
 };
 
-// Crear una nueva factura con validaciones y auditoría
+// Crear factura con secuencia y auditoría
 exports.createFactura = async (data) => {
   const { id_reserva, monto } = data;
   const connection = await getConnection();
 
-  // Validar que la reserva exista antes de generar la factura
+  // Validar existencia de reserva
   const reserva = await connection.execute(
     `SELECT COUNT(*) AS total FROM RESERVAS WHERE ID_RESERVA = :id_reserva`,
     [id_reserva]
@@ -37,7 +37,7 @@ exports.createFactura = async (data) => {
     throw new Error('La reserva especificada no existe.');
   }
 
-  // Obtener monto de equipaje asociado a la reserva
+  // Obtener monto total incluyendo equipaje
   const montoEquipaje = await connection.execute(
     `SELECT NVL(SUM(monto_equipaje), 0) AS monto_equipaje FROM PAGOS WHERE ID_FACTURA = (SELECT ID_FACTURA FROM FACTURACION WHERE ID_RESERVA = :id_reserva)`,
     [id_reserva]
@@ -49,8 +49,8 @@ exports.createFactura = async (data) => {
     await connection.execute('BEGIN');
 
     await connection.execute(
-      `INSERT INTO FACTURACION (ID_FACTURA, ID_RESERVA, MONTO, FECHA_FACTURA)
-       VALUES (seq_facturacion.NEXTVAL, :id_reserva, :totalFactura, SYSDATE)`,
+      `INSERT INTO FACTURACION (ID_RESERVA, MONTO, FECHA_FACTURA, VERSION)
+       VALUES (:id_reserva, :totalFactura, SYSDATE, 1)`,
       { id_reserva, totalFactura }
     );
 
@@ -71,28 +71,28 @@ exports.createFactura = async (data) => {
   return { message: 'Factura creada correctamente' };
 };
 
-// Actualizar factura con auditoría
+// Actualizar factura con control de concurrencia
 exports.updateFactura = async (id, data) => {
-  const { monto } = data;
   const connection = await getConnection();
 
   try {
     await connection.execute('BEGIN');
 
     const result = await connection.execute(
-      `UPDATE FACTURACION SET MONTO = :monto WHERE ID_FACTURA = :id`,
-      { monto, id }
+      `UPDATE FACTURACION SET MONTO = :monto, VERSION = VERSION + 1 
+       WHERE ID_FACTURA = :id AND VERSION = :version_actual`,
+      { monto: data.monto, id, version_actual: data.version }
     );
 
     if (result.rowsAffected === 0) {
-      throw new Error('No se encontró la factura especificada.');
+      throw new Error('Otro usuario ya modificó esta factura. Recarga la página e intenta nuevamente.');
     }
 
     // Auditoría de actualización
     await connection.execute(
       `INSERT INTO AUDITORIA_FACTURACION (ID_FACTURA, ID_RESERVA, MONTO, FECHA_CAMBIO, ACCION)
        VALUES (:id, (SELECT ID_RESERVA FROM FACTURACION WHERE ID_FACTURA = :id), :monto, SYSDATE, 'Actualización')`,
-      { id, monto }
+      { id, monto: data.monto }
     );
 
     await connection.execute('COMMIT');
@@ -112,10 +112,7 @@ exports.deleteFactura = async (id) => {
   try {
     await connection.execute('BEGIN');
 
-    await connection.execute(
-      `DELETE FROM FACTURACION WHERE ID_FACTURA = :id`,
-      [id]
-    );
+    await connection.execute(`DELETE FROM FACTURACION WHERE ID_FACTURA = :id`, [id]);
 
     // Auditoría de eliminación
     await connection.execute(

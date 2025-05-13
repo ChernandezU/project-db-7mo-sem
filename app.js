@@ -115,3 +115,6 @@ app.listen(PORT, HOST, () => {
 });
 
 module.exports = app;
+
+
+//corremos el servidor con el comando node server.js

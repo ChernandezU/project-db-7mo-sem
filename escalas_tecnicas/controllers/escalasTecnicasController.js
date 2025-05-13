@@ -18,26 +18,16 @@ exports.getEscalaById = async (req, res, next) => {
   }
 };
 
+
 exports.createEscala = async (req, res, next) => {
   try {
-    const { id_vuelo, pais, ciudad, aeropuerto, codigo_iata_aeropuerto, fecha_hora_llegada, fecha_hora_salida, duracion_estimada, duracion_real, estado_escala, observaciones } = req.body;
-
-    if (!['Pendiente', 'Completada', 'Cancelada'].includes(estado_escala)) {
-      return res.status(400).json({ message: "Estado inválido. Debe ser 'Pendiente', 'Completada' o 'Cancelada'." });
-    }
+    const { id_vuelo, orden, id_aeropuerto_intermedio, hora_escala } = req.body;
 
     const result = await escalasService.createEscala({
       id_vuelo,
-      pais,
-      ciudad,
-      aeropuerto,
-      codigo_iata_aeropuerto,
-      fecha_hora_llegada,
-      fecha_hora_salida,
-      duracion_estimada,
-      duracion_real,
-      estado_escala,
-      observaciones
+      orden,
+      id_aeropuerto_intermedio,
+      hora_escala
     });
 
     res.status(201).json(result);
