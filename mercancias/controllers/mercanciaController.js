@@ -11,7 +11,7 @@ exports.getAllMercancias = async (req, res, next) => {
 
 exports.getMercanciaById = async (req, res, next) => {
   try {
-    const result = await mercanciaService.getMercanciaById(req.params.id);
+    const result = await mercanciaService.getMercanciaById(req.params.id_mercancia);
     res.json(result);
   } catch (err) {
     next(err);
@@ -20,44 +20,31 @@ exports.getMercanciaById = async (req, res, next) => {
 
 exports.createMercancia = async (req, res, next) => {
   try {
-    const { descripcion, peso, id_reserva, tipo_envio, estado_envio } = req.body;
+    const { descripcion, peso, id_reserva } = req.body;
 
-    if (!['comercial', 'equipaje especial'].includes(tipo_envio)) {
-      return res.status(400).json({ message: "Tipo de envío inválido. Debe ser 'comercial' o 'equipaje especial'." });
+    if (!descripcion || !peso || !id_reserva) {
+      return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
     }
 
-    if (!['Pendiente', 'En tránsito', 'Entregado', 'Cancelado'].includes(estado_envio)) {
-      return res.status(400).json({ message: "Estado inválido. Debe ser 'Pendiente', 'En tránsito', 'Entregado' o 'Cancelado'." });
-    }
-
-    const result = await mercanciaService.createMercancia({
-      descripcion,
-      peso,
-      id_reserva,
-      tipo_envio,
-      estado_envio
-    });
-
+    const result = await mercanciaService.createMercancia({ descripcion, peso, id_reserva });
     res.status(201).json(result);
   } catch (err) {
     next(err);
   }
 };
-
-exports.updateMercancia = async (req, res, next) => {
-  try {
-    const result = await mercanciaService.updateMercancia(req.params.id, req.body);
-    res.json(result);
-  } catch (err) {
-    next(err);
-  }
-};
-
 exports.deleteMercancia = async (req, res, next) => {
   try {
-    const result = await mercanciaService.deleteMercancia(req.params.id);
+    const id_mercancia = req.params.id_mercancia;
+    console.log('📌 ID recibido en controlador para eliminar:', id_mercancia);
+
+    if (!id_mercancia) {
+      return res.status(400).json({ error: 'ID_MERCANCIA es obligatorio para eliminar.' });
+    }
+
+    const result = await mercanciaService.deleteMercancia(id_mercancia);
     res.json(result);
   } catch (err) {
+    console.error('📌 Error en deleteMercancia:', err);
     next(err);
   }
 };

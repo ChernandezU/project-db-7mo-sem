@@ -4,9 +4,8 @@ const router = express.Router();
 const controller = require('../controllers/facturacionController');
 
 router.get('/', controller.getAllFacturas);
-router.get('/:id', controller.getFacturaById);
+router.get('/:id_factura', controller.getFacturaById); // ✅ Correcto
 router.post('/', controller.createFactura);
-router.put('/:id', controller.updateFactura);
-router.delete('/:id', controller.deleteFactura);
+router.delete('/:id_factura', controller.deleteFactura);
 
 module.exports = router;

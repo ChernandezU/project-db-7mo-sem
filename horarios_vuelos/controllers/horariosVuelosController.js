@@ -11,7 +11,13 @@ exports.getAllHorariosVuelos = async (req, res, next) => {
 
 exports.getHorarioVueloById = async (req, res, next) => {
   try {
-    const result = await horariosVuelosService.getHorarioVueloById(req.params.id);
+    console.log('📌 ID recibido en controlador:', req.params.id_horario);
+
+    if (!req.params.id_horario) {
+      return res.status(400).json({ error: 'ID_HORARIO es obligatorio.' });
+    }
+
+    const result = await horariosVuelosService.getHorarioVueloById(req.params.id_horario);
     res.json(result);
   } catch (err) {
     next(err);
@@ -20,30 +26,14 @@ exports.getHorarioVueloById = async (req, res, next) => {
 
 exports.createHorarioVuelo = async (req, res, next) => {
   try {
-    const { id_vuelo, hora_salida, hora_llegada, zona_horaria, estado } = req.body;
+    const { id_vuelo, hora_salida, hora_llegada, estado } = req.body;
 
-    if (!['Programado', 'Confirmado', 'Cancelado', 'Demorado'].includes(estado)) {
-      return res.status(400).json({ message: "Estado inválido. Debe ser 'Programado', 'Confirmado', 'Cancelado' o 'Demorado'." });
+    if (!id_vuelo || !hora_salida || !hora_llegada || !estado) {
+      return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
     }
 
-    const result = await horariosVuelosService.createHorarioVuelo({
-      id_vuelo,
-      hora_salida,
-      hora_llegada,
-      zona_horaria,
-      estado
-    });
-
+    const result = await horariosVuelosService.createHorarioVuelo({ id_vuelo, hora_salida, hora_llegada, estado });
     res.status(201).json(result);
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.updateHorarioVuelo = async (req, res, next) => {
-  try {
-    const result = await horariosVuelosService.updateHorarioVuelo(req.params.id, req.body);
-    res.json(result);
   } catch (err) {
     next(err);
   }
@@ -51,7 +41,13 @@ exports.updateHorarioVuelo = async (req, res, next) => {
 
 exports.deleteHorarioVuelo = async (req, res, next) => {
   try {
-    const result = await horariosVuelosService.deleteHorarioVuelo(req.params.id);
+    console.log('📌 ID recibido en controlador para eliminar:', req.params.id_horario);
+
+    if (!req.params.id_horario) {
+      return res.status(400).json({ error: 'ID_HORARIO es obligatorio para eliminar.' });
+    }
+
+    const result = await horariosVuelosService.deleteHorarioVuelo(req.params.id_horario);
     res.json(result);
   } catch (err) {
     next(err);

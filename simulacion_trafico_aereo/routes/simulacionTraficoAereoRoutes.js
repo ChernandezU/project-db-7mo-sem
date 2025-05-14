@@ -3,10 +3,5 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/simulacionTraficoAereoController');
 
-router.get('/', controller.getAllSimulacionesTrafico);
-router.get('/:id', controller.getSimulacionTraficoById);
-router.post('/', controller.createSimulacionTrafico);
-router.put('/:id', controller.updateSimulacionTrafico);
-router.delete('/:id', controller.deleteSimulacionTrafico);
-
+router.get('/',controller.getAllSimulacionesTrafico);
 module.exports = router;

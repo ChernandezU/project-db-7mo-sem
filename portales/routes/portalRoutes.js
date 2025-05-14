@@ -4,9 +4,5 @@ const router = express.Router();
 const controller = require('../controllers/portalController');
 
 router.get('/', controller.getAllPortales);
-router.get('/:id', controller.getPortalById);
-router.post('/', controller.createPortal);
-router.put('/:id', controller.updatePortal);
-router.delete('/:id', controller.deletePortal);
 
 module.exports = router;

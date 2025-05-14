@@ -4,9 +4,8 @@ const router = express.Router();
 const controller = require('../controllers/mercanciaController');
 
 router.get('/', controller.getAllMercancias);
-router.get('/:id', controller.getMercanciaById);
+router.get('/:id_mercancia', controller.getMercanciaById); // ✅ Correcto
+router.delete('/:id_mercancia', controller.deleteMercancia); // ✅ Correcto
 router.post('/', controller.createMercancia);
-router.put('/:id', controller.updateMercancia);
-router.delete('/:id', controller.deleteMercancia);
 
 module.exports = router;

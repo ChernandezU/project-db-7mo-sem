@@ -42,26 +42,27 @@ exports.createEscala = async (data) => {
       throw new Error('El vuelo especificado no existe.');
     }
 
-    // ✅ Corregimos `hora_escala` y aseguramos que se envíe en el formato correcto
+    // ✅ Convertimos `hora_escala` en `YYYY-MM-DD HH24:MI:SS` antes de enviarlo
     let horaEscalaValue = null;
-    if (hora_escala) {
+    if (hora_escala && typeof hora_escala === 'string' && hora_escala.trim() !== '') {
       const fecha = new Date(hora_escala);
       horaEscalaValue = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')} ${String(fecha.getHours()).padStart(2, '0')}:${String(fecha.getMinutes()).padStart(2, '0')}:${String(fecha.getSeconds()).padStart(2, '0')}`;
     }
 
-    console.log('🚀 Ejecutando INSERT de escala técnica...');
-    console.log('📌 ID Vuelo:', id_vuelo);
-    console.log('📌 Orden:', orden);
-    console.log('📌 ID Aeropuerto Intermedio:', id_aeropuerto_intermedio);
-    console.log('📌 Hora Escala procesada:', horaEscalaValue);
+    console.log('📌 Tipo de hora_escala:', typeof horaEscalaValue);
+    console.log('📌 Valor de hora_escala después de conversión:', horaEscalaValue);
 
-    // ✅ Modificamos el `INSERT` para que `hora_escala` se procese correctamente
-    const result = await connection.execute(
-      `INSERT INTO ESCALAS_TECNICAS (ID_VUELO, ORDEN, ID_AEROPUERTO_INTERMEDIO, HORA_ESCALA) 
-       VALUES (:id_vuelo, :orden, :id_aeropuerto_intermedio, TO_TIMESTAMP(:hora_escala, 'YYYY-MM-DD HH24:MI:SS'))`,
-      { id_vuelo, orden, id_aeropuerto_intermedio, hora_escala: horaEscalaValue },
-      { autoCommit: true }
-    );
+    // ✅ Ajustamos el `INSERT`, asegurando que `hora_escala` pase correctamente a `TO_TIMESTAMP()`
+    const sqlQuery = `
+      INSERT INTO ESCALAS_TECNICAS (ID_VUELO, ORDEN, ID_AEROPUERTO_INTERMEDIO, HORA_ESCALA) 
+      VALUES (:id_vuelo, :orden, :id_aeropuerto_intermedio, ${horaEscalaValue ? "TO_TIMESTAMP(:hora_escala, 'YYYY-MM-DD HH24:MI:SS')" : "NULL"})`;
+
+    const result = await connection.execute(sqlQuery, {
+      id_vuelo,
+      orden,
+      id_aeropuerto_intermedio,
+      hora_escala: horaEscalaValue || null
+    }, { autoCommit: true });
 
     console.log('✔ Escala técnica insertada correctamente:', result);
 

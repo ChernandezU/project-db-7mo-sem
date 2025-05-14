@@ -9,39 +9,3 @@ exports.getAllProgramacionesMundiales = async (req, res, next) => {
     next(err);
   }
 };
-
-exports.getProgramacionMundialById = async (req, res, next) => {
-  try {
-    const result = await programacionMundialService.getProgramacionMundialById(req.params.id);
-    res.json(result);
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.createProgramacionMundial = async (req, res, next) => {
-  try {
-    const result = await programacionMundialService.createProgramacionMundial(req.body);
-    res.status(201).json(result);
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.updateProgramacionMundial = async (req, res, next) => {
-  try {
-    const result = await programacionMundialService.updateProgramacionMundial(req.params.id, req.body);
-    res.json(result);
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.deleteProgramacionMundial = async (req, res, next) => {
-  try {
-    const result = await programacionMundialService.deleteProgramacionMundial(req.params.id);
-    res.json(result);
-  } catch (err) {
-    next(err);
-  }
-};

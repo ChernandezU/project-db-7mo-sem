@@ -1,60 +1,71 @@
-//servicio para la gestion de .....
 const oracledb = require('oracledb');
 const { getConnection } = require('../../config/db');
 
+// ✅ Obtener todos los check-ins
 exports.getAllCheckIns = async () => {
   const connection = await getConnection();
-  const result = await connection.execute(`SELECT * FROM CHECKIN`);
+  console.log('📌 Ejecutando consulta: SELECT ID_CHECKIN, ID_RESERVA, PASAPORTE, FECHA_CHECKIN, TERMINAL FROM CHECKIN');
+
+  const result = await connection.execute(
+    `SELECT ID_CHECKIN, ID_RESERVA, PASAPORTE, FECHA_CHECKIN, TERMINAL 
+     FROM CHECKIN 
+     ORDER BY FECHA_CHECKIN DESC`
+  );
+
+  console.log('📌 Resultados obtenidos:', result.rows); // 🔎 Depuración
   await connection.close();
   return result.rows;
 };
 
-exports.getCheckInById = async (id) => {
-  const connection = await getConnection();
-  const result = await connection.execute(
-    `SELECT * FROM CHECKIN WHERE ID_CHECKIN = :id`,
-    [id]
-  );
-  await connection.close();
-  return result.rows[0];
-};
-
+// ✅ Crear un nuevo check-in con validaciones
 exports.createCheckIn = async (data) => {
   const { id_reserva, pasaporte, fecha_checkin, terminal } = data;
-
   const connection = await getConnection();
+
+  console.log('📌 Insertando check-in:', { id_reserva, pasaporte, fecha_checkin, terminal });
+
+  // 🔎 Validar que ID_RESERVA existe antes de insertar
+  const reservaExistente = await connection.execute(
+    `SELECT COUNT(*) AS total FROM RESERVAS WHERE ID_RESERVA = :id_reserva`,
+    { id_reserva }
+  );
+
+  if (reservaExistente.rows[0].TOTAL === 0) {
+    throw new Error(`No se encontró reserva con ID_RESERVA ${id_reserva}`);
+  }
+
   await connection.execute(
     `INSERT INTO CHECKIN (ID_RESERVA, PASAPORTE, FECHA_CHECKIN, TERMINAL) 
-    VALUES (:id_reserva, :pasaporte, :fecha_checkin, :terminal)`,
+     VALUES (:id_reserva, :pasaporte, TO_DATE(:fecha_checkin, 'YYYY-MM-DD'), :terminal)`,
     { id_reserva, pasaporte, fecha_checkin, terminal },
     { autoCommit: true }
   );
+
   await connection.close();
   return { message: 'Check-in creado correctamente' };
 };
 
-exports.updateCheckIn = async (id, data) => {
-  const { id_reserva, pasaporte, fecha_checkin, terminal } = data;
-
+// ✅ Eliminar check-in con validación previa
+exports.deleteCheckIn = async (id_checkin) => {
   const connection = await getConnection();
+
+  console.log('📌 Eliminando check-in con ID_CHECKIN:', id_checkin);
+
+  const exists = await connection.execute(
+    `SELECT COUNT(*) AS total FROM CHECKIN WHERE ID_CHECKIN = :id_checkin`,
+    { id_checkin }
+  );
+
+  if (exists.rows[0].TOTAL === 0) {
+    throw new Error(`No se encontró check-in con ID_CHECKIN ${id_checkin} para eliminar.`);
+  }
+
   await connection.execute(
-    `UPDATE CHECKIN SET ID_RESERVA = :id_reserva, PASAPORTE = :pasaporte, 
-    FECHA_CHECKIN = :fecha_checkin, TERMINAL = :terminal 
-    WHERE ID_CHECKIN = :id`,
-    { id_reserva, pasaporte, fecha_checkin, terminal, id },
+    `DELETE FROM CHECKIN WHERE ID_CHECKIN = :id_checkin`,
+    { id_checkin },
     { autoCommit: true }
   );
-  await connection.close();
-  return { message: 'Check-in actualizado correctamente' };
-};
 
-exports.deleteCheckIn = async (id) => {
-  const connection = await getConnection();
-  await connection.execute(
-    `DELETE FROM CHECKIN WHERE ID_CHECKIN = :id`,
-    [id],
-    { autoCommit: true }
-  );
   await connection.close();
   return { message: 'Check-in eliminado correctamente' };
 };

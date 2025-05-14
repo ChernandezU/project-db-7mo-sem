@@ -21,17 +21,14 @@ exports.getObjetoById = async (req, res, next) => {
 
 exports.createObjeto = async (req, res, next) => {
   try {
-    const result = await objetoPerdidoService.createObjeto(req.body);
-    res.status(201).json(result);
-  } catch (err) {
-    next(err);
-  }
-};
+    const { descripcion, fecha_encontrado, estado } = req.body;
 
-exports.updateObjeto = async (req, res, next) => {
-  try {
-    const result = await objetoPerdidoService.updateObjeto(req.params.id, req.body);
-    res.json(result);
+    if (!descripcion || !estado) {
+      return res.status(400).json({ error: 'Los campos "descripcion" y "estado" son obligatorios.' });
+    }
+
+    const result = await objetoPerdidoService.createObjeto({ descripcion, fecha_encontrado, estado });
+    res.status(201).json(result);
   } catch (err) {
     next(err);
   }

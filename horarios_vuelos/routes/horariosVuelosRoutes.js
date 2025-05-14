@@ -3,11 +3,10 @@ const express = require('express');
 const router = express.Router();
 const horariosVuelosController = require('../controllers/horariosVuelosController');
 
-// Definir las rutas para los horarios de vuelo
-router.get('/', horariosVuelosController.getAllHorariosVuelos);
-router.get('/:id', horariosVuelosController.getHorarioVueloById);
-router.post('/', horariosVuelosController.createHorarioVuelo);
-router.put('/:id', horariosVuelosController.updateHorarioVuelo);
-router.delete('/:id', horariosVuelosController.deleteHorarioVuelo);
+// ✅ Rutas para horarios de vuelos
+router.get('/', horariosVuelosController.getAllHorariosVuelos); // Obtener todos los horarios de vuelos
+router.get('/:id_horario', horariosVuelosController.getHorarioVueloById); // Obtener horario de vuelo por ID
+router.post('/', horariosVuelosController.createHorarioVuelo); // Crear un nuevo horario de vuelo
+router.delete('/:id_horario', horariosVuelosController.deleteHorarioVuelo); // Eliminar horario de vuelo por ID
 
 module.exports = router;

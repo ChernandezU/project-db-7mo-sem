@@ -4,9 +4,7 @@ const router = express.Router();
 const controller = require('../controllers/checkinController');
 
 router.get('/', controller.getAllCheckIns);
-router.get('/:id', controller.getCheckInById);
 router.post('/', controller.createCheckIn);
-router.put('/:id', controller.updateCheckIn);
-router.delete('/:id', controller.deleteCheckIn);
+router.delete('/:id_checkin', controller.deleteCheckIn);
 
 module.exports = router;

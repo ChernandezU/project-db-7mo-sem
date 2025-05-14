@@ -21,7 +21,13 @@ exports.getPersonalById = async (req, res, next) => {
 
 exports.createPersonal = async (req, res, next) => {
   try {
-    const result = await personalService.createPersonal(req.body);
+    const { nombre, cargo, contacto } = req.body;
+
+    if (!nombre || !cargo || !contacto) {
+      return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
+    }
+
+    const result = await personalService.createPersonal({ nombre, cargo, contacto });
     res.status(201).json(result);
   } catch (err) {
     next(err);

@@ -1,131 +1,87 @@
 const oracledb = require('oracledb');
 const { getConnection } = require('../../config/db');
 
-// Obtener todas las facturas con concurrencia optimizada
+// ✅ Obtener todas las facturas
 exports.getAllFacturas = async () => {
   const connection = await getConnection();
   const result = await connection.execute(
-    `SELECT * FROM FACTURACION ORDER BY FECHA_FACTURA FOR UPDATE SKIP LOCKED`
+    `SELECT ID_FACTURA, ID_RESERVA, MONTO, FECHA_FACTURA FROM FACTURACION ORDER BY FECHA_FACTURA DESC`
   );
   await connection.close();
   return result.rows;
 };
 
-// Obtener factura por ID con bloqueo seguro
-exports.getFacturaById = async (id) => {
+// ✅ Obtener factura por ID con validación previa
+exports.getFacturaById = async (id_factura) => {
+  if (!id_factura) {
+    throw new Error('ID_FACTURA es obligatorio.');
+  }
+
   const connection = await getConnection();
+  console.log('📌 Buscando factura con ID_FACTURA:', id_factura);
+
   const result = await connection.execute(
-    `SELECT * FROM FACTURACION WHERE ID_FACTURA = :id FOR UPDATE NOWAIT`,
-    [id]
+    `SELECT ID_FACTURA, ID_RESERVA, MONTO, FECHA_FACTURA FROM FACTURACION WHERE ID_FACTURA = :id_factura`,
+    { id_factura }
   );
+
   await connection.close();
+
+  if (!result.rows.length) {
+    throw new Error(`No se encontró factura con ID_FACTURA ${id_factura}`);
+  }
+
   return result.rows[0];
 };
 
-// Crear factura con secuencia y auditoría
+// ✅ Crear una nueva factura con validaciones
 exports.createFactura = async (data) => {
   const { id_reserva, monto } = data;
   const connection = await getConnection();
 
-  // Validar existencia de reserva
-  const reserva = await connection.execute(
+  console.log('📌 Insertando factura:', { id_reserva, monto });
+
+  // 🔎 Validar que ID_RESERVA existe antes de insertar
+  const reservaExistente = await connection.execute(
     `SELECT COUNT(*) AS total FROM RESERVAS WHERE ID_RESERVA = :id_reserva`,
-    [id_reserva]
+    { id_reserva }
   );
 
-  if (reserva.rows[0].TOTAL === 0) {
-    throw new Error('La reserva especificada no existe.');
+  if (reservaExistente.rows[0].TOTAL === 0) {
+    throw new Error(`No se encontró reserva con ID_RESERVA ${id_reserva}`);
   }
 
-  // Obtener monto total incluyendo equipaje
-  const montoEquipaje = await connection.execute(
-    `SELECT NVL(SUM(monto_equipaje), 0) AS monto_equipaje FROM PAGOS WHERE ID_FACTURA = (SELECT ID_FACTURA FROM FACTURACION WHERE ID_RESERVA = :id_reserva)`,
-    [id_reserva]
+  await connection.execute(
+    `INSERT INTO FACTURACION (ID_RESERVA, MONTO, FECHA_FACTURA) 
+     VALUES (:id_reserva, :monto, SYSDATE)`,
+    { id_reserva, monto },
+    { autoCommit: true }
   );
-
-  const totalFactura = monto + montoEquipaje.rows[0].MONTO_EQUIPAJE;
-
-  try {
-    await connection.execute('BEGIN');
-
-    await connection.execute(
-      `INSERT INTO FACTURACION (ID_RESERVA, MONTO, FECHA_FACTURA, VERSION)
-       VALUES (:id_reserva, :totalFactura, SYSDATE, 1)`,
-      { id_reserva, totalFactura }
-    );
-
-    // Auditoría de creación de factura
-    await connection.execute(
-      `INSERT INTO AUDITORIA_FACTURACION (ID_FACTURA, ID_RESERVA, MONTO, FECHA_CAMBIO, ACCION)
-       VALUES (seq_facturacion.CURRVAL, :id_reserva, :totalFactura, SYSDATE, 'Creación')`,
-      { id_reserva, totalFactura }
-    );
-
-    await connection.execute('COMMIT');
-  } catch (err) {
-    await connection.execute('ROLLBACK');
-    throw err;
-  }
 
   await connection.close();
   return { message: 'Factura creada correctamente' };
 };
 
-// Actualizar factura con control de concurrencia
-exports.updateFactura = async (id, data) => {
+// ✅ Eliminar factura con validación previa
+exports.deleteFactura = async (id_factura) => {
   const connection = await getConnection();
 
-  try {
-    await connection.execute('BEGIN');
+  console.log('📌 Eliminando factura con ID_FACTURA:', id_factura);
 
-    const result = await connection.execute(
-      `UPDATE FACTURACION SET MONTO = :monto, VERSION = VERSION + 1 
-       WHERE ID_FACTURA = :id AND VERSION = :version_actual`,
-      { monto: data.monto, id, version_actual: data.version }
-    );
+  const exists = await connection.execute(
+    `SELECT COUNT(*) AS total FROM FACTURACION WHERE ID_FACTURA = :id_factura`,
+    { id_factura }
+  );
 
-    if (result.rowsAffected === 0) {
-      throw new Error('Otro usuario ya modificó esta factura. Recarga la página e intenta nuevamente.');
-    }
-
-    // Auditoría de actualización
-    await connection.execute(
-      `INSERT INTO AUDITORIA_FACTURACION (ID_FACTURA, ID_RESERVA, MONTO, FECHA_CAMBIO, ACCION)
-       VALUES (:id, (SELECT ID_RESERVA FROM FACTURACION WHERE ID_FACTURA = :id), :monto, SYSDATE, 'Actualización')`,
-      { id, monto: data.monto }
-    );
-
-    await connection.execute('COMMIT');
-  } catch (err) {
-    await connection.execute('ROLLBACK');
-    throw err;
+  if (exists.rows[0].TOTAL === 0) {
+    throw new Error(`No se encontró factura con ID_FACTURA ${id_factura} para eliminar.`);
   }
 
-  await connection.close();
-  return { message: 'Factura actualizada correctamente' };
-};
-
-// Eliminar factura con auditoría
-exports.deleteFactura = async (id) => {
-  const connection = await getConnection();
-
-  try {
-    await connection.execute('BEGIN');
-
-    await connection.execute(`DELETE FROM FACTURACION WHERE ID_FACTURA = :id`, [id]);
-
-    // Auditoría de eliminación
-    await connection.execute(
-      `INSERT INTO AUDITORIA_FACTURACION (ID_FACTURA, FECHA_CAMBIO, ACCION)
-       VALUES (:id, SYSDATE, 'Eliminación')`,
-      { id }
-    );
-
-    await connection.execute('COMMIT');
-  } catch (err) {
-    await connection.execute('ROLLBACK');
-    throw err;
-  }
+  await connection.execute(
+    `DELETE FROM FACTURACION WHERE ID_FACTURA = :id_factura`,
+    { id_factura },
+    { autoCommit: true }
+  );
 
   await connection.close();
   return { message: 'Factura eliminada correctamente' };

@@ -4,9 +4,8 @@ const router = express.Router();
 const controller = require('../controllers/visaController');
 
 router.get('/', controller.getAllVisas);
-router.get('/:id', controller.getVisaById);
+router.get('/:id_visa', controller.getVisaById);
 router.post('/', controller.createVisa);
-router.put('/:id', controller.updateVisa);
-router.delete('/:id', controller.deleteVisa);
+router.put('/:id_visa', controller.updateVisa);
 
 module.exports = router;

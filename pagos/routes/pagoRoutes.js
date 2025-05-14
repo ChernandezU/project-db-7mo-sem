@@ -4,9 +4,8 @@ const router = express.Router();
 const controller = require('../controllers/pagoController');
 
 router.get('/', controller.getAllPagos);
-router.get('/:id', controller.getPagoById);
+router.get('/:id_pago', controller.getPagoById);
 router.post('/', controller.createPago);
-router.put('/:id', controller.updatePago);
-router.delete('/:id', controller.deletePago);
+router.delete('/:id_pago', controller.deletePago);
 
 module.exports = router;
